@@ -82,4 +82,19 @@ mod pesel_validator_tests {
         assert_eq!( pesel.dob, 14);
     }
 
+    #[test]
+    fn check_if_is_female() {
+        let pesel_input = "44051401458".to_string();
+
+        let pesel = super::PESEL::from_str(pesel_input.as_str()).unwrap();
+        assert_eq!(false, pesel.is_female());
+    }
+
+    #[test]
+    fn check_if_is_male() {
+        let pesel_input = "44051401458".to_string();
+
+        let pesel = super::PESEL::from_str(pesel_input.as_str()).unwrap();
+        assert_eq!(true, pesel.is_male());
+    }
 }
