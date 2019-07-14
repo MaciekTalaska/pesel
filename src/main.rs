@@ -19,20 +19,20 @@ impl FromStr for PESEL {
     type Err = ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut news = s.clone().to_string();
-        let checksum = news.pop().unwrap().to_digit(10).unwrap() as u8;
-        let gender   = news.pop().unwrap().to_digit(10).unwrap() as u8;
-        let random3  = news.pop().unwrap().to_digit(10).unwrap() as u8;
-        let random2  = news.pop().unwrap().to_digit(10).unwrap() as u8;
-        let random1  = news.pop().unwrap().to_digit(10).unwrap() as u8;
+        let mut copy = s.clone().to_string();
+        let checksum = copy.pop().unwrap().to_digit(10).unwrap() as u8;
+        let gender   = copy.pop().unwrap().to_digit(10).unwrap() as u8;
+        let random3  = copy.pop().unwrap().to_digit(10).unwrap() as u8;
+        let random2  = copy.pop().unwrap().to_digit(10).unwrap() as u8;
+        let random1  = copy.pop().unwrap().to_digit(10).unwrap() as u8;
 
 
-        let yob = news[0..2].parse::<u8>().unwrap();
-        let mob = news[2..4].parse::<u8>().unwrap();
-        let dob = news[4..6].parse::<u8>().unwrap();
+        let yob = copy[0..2].parse::<u8>().unwrap();
+        let mob = copy[2..4].parse::<u8>().unwrap();
+        let dob = copy[4..6].parse::<u8>().unwrap();
 
         Ok(PESEL{
-            raw: news.clone().to_string(),
+            raw: s.clone().to_string(),
             yob,
             mob,
             dob,
@@ -46,6 +46,7 @@ impl FromStr for PESEL {
 }
 
 fn main() {
+    // that is just a sample PESEL number taken from Wikipedia article
     let pesel = PESEL::from_str("44051401458").unwrap();
 
     println!("pesel is: {}", pesel.yob);
