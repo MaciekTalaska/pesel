@@ -8,4 +8,4 @@ This is a very simple library written in Rust that aims to validate PESEL number
 TODO:
 -----
 
-[ ] generating pesel numbers
+ [ ] generating valid PESEL numbers
