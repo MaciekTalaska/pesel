@@ -1,7 +1,5 @@
 use std::str::FromStr;
 use std::error::Error;
-use std::fmt;
-use std::fmt::Display;
 
 const PESEL_LENGTH: usize = 11;
 
