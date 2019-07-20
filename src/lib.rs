@@ -1,47 +1,66 @@
 use std::str::FromStr;
-use std::num::ParseIntError;
+use std::fmt::Display;
+
+const PESEL_LENGTH: usize = 11;
 
 #[derive(Debug)]
 pub struct PESEL {
-    raw:        String,  // raw PESEL as &str
-    yob:        u8,   // year of birth (could cover 5 centuries)
-    mob:        u8,   // month of birth
-    dob:        u8,   // day of birth
-    random1:    u8,    // some...
-    random2:    u8,    // ...random
-    random3:    u8,    // ...data
-    // TODO: experiment with union here
-    gender:     u8,    // biological gender
-    checksum:   u8,    // checksum used for validation
+    raw:        String,     // raw PESEL as &str
+    yob:        u8,         // year of birth (could cover 5 centuries)
+    mob:        u8,         // month of birth
+    dob:        u8,         // day of birth
+    random1:    u8,         // some...
+    random2:    u8,         // ...random
+    random3:    u8,         // ...data
+    gender:     u8,         // biological gender
+    checksum:   u8,         // checksum used for validation
 }
 
+#[derive(Debug)]
+pub struct PESELParsingError {
+    message: String
+}
+
+//impl PESELParsingError {
+//    fn new (msg: &str) {
+//        PESELParsingError{ message: msg.to_string() };
+//    }
+//}
+
 impl FromStr for PESEL {
-    type Err = ParseIntError;
+    type Err = PESELParsingError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut copy = s.clone().to_string();
-        let checksum = copy.pop().unwrap().to_digit(10).unwrap() as u8;
-        let gender   = copy.pop().unwrap().to_digit(10).unwrap() as u8;
-        let random3  = copy.pop().unwrap().to_digit(10).unwrap() as u8;
-        let random2  = copy.pop().unwrap().to_digit(10).unwrap() as u8;
-        let random1  = copy.pop().unwrap().to_digit(10).unwrap() as u8;
+        if s.len() != PESEL_LENGTH {
+            Err(PESELParsingError {message : "PESEL has to be of 11 chars long".to_string()})
+//            Err(PESELParsingError::new(msg: "PESEL too short!"))
+        }
+        else
+        {
+            let mut copy = s.clone().to_string();
+            let checksum = copy.pop().unwrap().to_digit(10).unwrap() as u8;
+            let gender   = copy.pop().unwrap().to_digit(10).unwrap() as u8;
+            let random3  = copy.pop().unwrap().to_digit(10).unwrap() as u8;
+            let random2  = copy.pop().unwrap().to_digit(10).unwrap() as u8;
+            let random1  = copy.pop().unwrap().to_digit(10).unwrap() as u8;
 
 
-        let yob = copy[0..2].parse::<u8>().unwrap();
-        let mob = copy[2..4].parse::<u8>().unwrap();
-        let dob = copy[4..6].parse::<u8>().unwrap();
+            let yob = copy[0..2].parse::<u8>().unwrap();
+            let mob = copy[2..4].parse::<u8>().unwrap();
+            let dob = copy[4..6].parse::<u8>().unwrap();
 
-        Ok(PESEL{
-            raw: s.clone().to_string(),
-            yob,
-            mob,
-            dob,
-            random1,
-            random2,
-            random3,
-            gender,
-            checksum,
-        })
+            Ok(PESEL{
+                raw: s.clone().to_string(),
+                yob,
+                mob,
+                dob,
+                random1,
+                random2,
+                random3,
+                gender,
+                checksum,
+            })
+        }
     }
 }
 
@@ -96,5 +115,14 @@ mod pesel_validator_tests {
 
         let pesel = super::PESEL::from_str(pesel_input.as_str()).unwrap();
         assert_eq!(true, pesel.is_male());
+    }
+
+    #[test]
+    fn zero_length_string_should_fail() {
+        let pesel_input = "".to_string();
+
+        let pesel = super::PESEL::from_str(pesel_input.as_str());
+        //assert_eq!(super::PESELParsingError::new("PESEL has to be of 11 chars long"), pesel.is_err());
+        assert_eq!(true, pesel.is_err());
     }
 }
