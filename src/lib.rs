@@ -49,17 +49,15 @@ impl FromStr for PESEL {
         }
         else
         {
-            let mut copy = s.clone().to_string();
-            let checksum = copy.pop().unwrap().to_digit(10).unwrap() as u8;
-            let gender   = copy.pop().unwrap().to_digit(10).unwrap() as u8;
-            let random3  = copy.pop().unwrap().to_digit(10).unwrap() as u8;
-            let random2  = copy.pop().unwrap().to_digit(10).unwrap() as u8;
-            let random1  = copy.pop().unwrap().to_digit(10).unwrap() as u8;
+            let checksum = s[10..11].parse::<u8>().unwrap();
+            let gender  = s[9..10].parse::<u8>().unwrap();
+            let random3 = s[8..9].parse::<u8>().unwrap();
+            let random2 = s[7..8].parse::<u8>().unwrap();
+            let random1 = s[6..7].parse::<u8>().unwrap();
 
-
-            let yob = copy[0..2].parse::<u8>().unwrap();
-            let mob = copy[2..4].parse::<u8>().unwrap();
-            let dob = copy[4..6].parse::<u8>().unwrap();
+            let yob = s[0..2].parse::<u8>().unwrap();
+            let mob = s[2..4].parse::<u8>().unwrap();
+            let dob = s[4..6].parse::<u8>().unwrap();
 
             Ok(PESEL{
                 raw: s.clone().to_string(),
