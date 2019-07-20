@@ -1,4 +1,6 @@
 use std::str::FromStr;
+use std::error::Error;
+use std::fmt;
 use std::fmt::Display;
 
 const PESEL_LENGTH: usize = 11;
@@ -21,19 +23,31 @@ pub struct PESELParsingError {
     message: String
 }
 
-//impl PESELParsingError {
-//    fn new (msg: &str) {
-//        PESELParsingError{ message: msg.to_string() };
-//    }
-//}
+impl PESELParsingError {
+    fn new (msg: &str) -> PESELParsingError {
+        PESELParsingError{ message: msg.to_string() }
+    }
+}
+
+impl std::fmt::Display for PESELParsingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f,"{}",self.message)
+    }
+}
+
+impl Error for PESELParsingError {
+    fn description(&self) -> &str {
+        &self.message
+    }
+}
 
 impl FromStr for PESEL {
     type Err = PESELParsingError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.len() != PESEL_LENGTH {
-            Err(PESELParsingError {message : "PESEL has to be of 11 chars long".to_string()})
-//            Err(PESELParsingError::new(msg: "PESEL too short!"))
+//            Err(PESELParsingError {message : "PESEL has to be of 11 chars long".to_string()})
+            Err(PESELParsingError::new("PESEL has to be of 11 chars long"))
         }
         else
         {
