@@ -1,0 +1,17 @@
+env:
+  - RUST_BACKTRACE=full
+language: rust
+rust:
+  - stable
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: false
+    - os: osx
+  fast_finish: true
+cache: cargo
+script:
+  - cargo build --verbose
+  - cargo test
+
