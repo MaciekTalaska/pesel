@@ -14,6 +14,17 @@ pub struct PESEL {
     random3:    u8,         // ...data
     gender:     u8,         // biological gender
     checksum:   u8,         // checksum used for validation
+    a:          u8,
+    b:          u8,
+    c:          u8,
+    d:          u8,
+    e:          u8,
+    f:          u8,
+    g:          u8,
+    h:          u8,
+    i:          u8,
+    j:          u8,
+    k:          u8,
 }
 
 #[derive(Debug)]
@@ -56,6 +67,20 @@ impl FromStr for PESEL {
         let mob = s[2..4].parse::<u8>().unwrap();
         let dob = s[4..6].parse::<u8>().unwrap();
 
+
+        let mut all_chars = s.chars();
+        let a = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let b = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let c = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let d = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let e = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let f = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let g = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let h = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let i = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let j = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let k = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+
         Ok(PESEL{
             raw: s.clone().to_string(),
             yob,
@@ -66,13 +91,35 @@ impl FromStr for PESEL {
             random3,
             gender,
             checksum,
+            a,
+            b,
+            c,
+            d,
+            e,
+            f,
+            g,
+            h,
+            i,
+            j,
+            k,
         })
     }
 }
 
 impl PESEL {
-    pub fn is_valid() -> bool {
-        return false;
+    pub fn is_valid(&self) -> bool {
+        let sum =  9 * self.a +
+            7 * self.b +
+            3 * self.c +
+            self.d +
+            9 * self.e +
+            7 * self.f +
+            3 * self.g +
+            self.h +
+            9 * self.i +
+            7 * self.j;
+        let rest =  sum % 10;
+        (self.k == rest)
     }
 
     pub fn is_male(&self) -> bool {
@@ -131,5 +178,13 @@ mod pesel_validator_tests {
         assert_eq!(true, pesel.is_err());
         // TODO: implement std::cmp::PartialEq, for comparing like below
 //        assert_eq!(super::PESELParsingError::new("PESEL has to be of 11 chars long"), pesel);
+    }
+
+    #[test]
+    fn proper_pesel_should_be_validated() {
+        let pesel_input = "44051401458".to_string();
+        let pesel = super::PESEL::from_str(pesel_input.as_str()).unwrap();
+
+        assert_eq!(true, pesel.is_valid());
     }
 }
