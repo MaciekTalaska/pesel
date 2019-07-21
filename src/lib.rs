@@ -187,4 +187,12 @@ mod pesel_validator_tests {
 
         assert_eq!(true, pesel.is_valid());
     }
+
+    #[test]
+    fn invalid_pesel_should_not_be_validated() {
+        let pesel_input = "44051401459".to_string();
+        let pesel = super::PESEL::from_str(pesel_input.as_str()).unwrap();
+
+        assert_eq!(false, pesel.is_valid());
+    }
 }
