@@ -44,33 +44,29 @@ impl FromStr for PESEL {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.len() != PESEL_LENGTH {
-//            Err(PESELParsingError {message : "PESEL has to be of 11 chars long".to_string()})
-            Err(PESELParsingError::new("PESEL has to be of 11 chars long"))
+            return Err(PESELParsingError::new("PESEL has to be of 11 chars long"));
         }
-        else
-        {
-            let checksum = s[10..11].parse::<u8>().unwrap();
-            let gender  = s[9..10].parse::<u8>().unwrap();
-            let random3 = s[8..9].parse::<u8>().unwrap();
-            let random2 = s[7..8].parse::<u8>().unwrap();
-            let random1 = s[6..7].parse::<u8>().unwrap();
+        let checksum = s[10..11].parse::<u8>().unwrap();
+        let gender  = s[9..10].parse::<u8>().unwrap();
+        let random3 = s[8..9].parse::<u8>().unwrap();
+        let random2 = s[7..8].parse::<u8>().unwrap();
+        let random1 = s[6..7].parse::<u8>().unwrap();
 
-            let yob = s[0..2].parse::<u8>().unwrap();
-            let mob = s[2..4].parse::<u8>().unwrap();
-            let dob = s[4..6].parse::<u8>().unwrap();
+        let yob = s[0..2].parse::<u8>().unwrap();
+        let mob = s[2..4].parse::<u8>().unwrap();
+        let dob = s[4..6].parse::<u8>().unwrap();
 
-            Ok(PESEL{
-                raw: s.clone().to_string(),
-                yob,
-                mob,
-                dob,
-                random1,
-                random2,
-                random3,
-                gender,
-                checksum,
-            })
-        }
+        Ok(PESEL{
+            raw: s.clone().to_string(),
+            yob,
+            mob,
+            dob,
+            random1,
+            random2,
+            random3,
+            gender,
+            checksum,
+        })
     }
 }
 
@@ -132,7 +128,8 @@ mod pesel_validator_tests {
         let pesel_input = "".to_string();
 
         let pesel = super::PESEL::from_str(pesel_input.as_str());
-        //assert_eq!(super::PESELParsingError::new("PESEL has to be of 11 chars long"), pesel.is_err());
         assert_eq!(true, pesel.is_err());
+        // TODO: implement std::cmp::PartialEq, for comparing like below
+//        assert_eq!(super::PESELParsingError::new("PESEL has to be of 11 chars long"), pesel);
     }
 }
