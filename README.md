@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/MaciekTalaska/pesel.svg?branch=master)](https://travis-ci.org/MaciekTalaska/pesel)
+[![Travis Build Status](https://travis-ci.org/MaciekTalaska/pesel.svg?branch=master)](https://travis-ci.org/MaciekTalaska/pesel)
+
+[![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/cjp41x6e7p3xamth?svg=true)](https://ci.appveyor.com/project/MaciekTalaska/pesel)
 
 PESEL
 =====
