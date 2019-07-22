@@ -32,6 +32,10 @@ impl FromStr for PESEL {
         if s.len() != PESEL_LENGTH {
             return Err(PESELParsingError::new("PESEL has to be of 11 chars long"));
         }
+        if s.chars().any(|f| !f.is_ascii_digit()) {
+            return Err(PESELParsingError::new("PESEL may only contain digits!"));
+        }
+        // TODO: Q: should PESEL become automatically invalidated (and thus impossible to create) if algorithm based validation fails?
         let checksum = s[10..11].parse::<u8>().unwrap();
         let gender  = s[9..10].parse::<u8>().unwrap();
 
@@ -160,6 +164,15 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str(pesel_input.as_str()).unwrap();
 
         assert_eq!(false, pesel.is_valid());
+    }
+
+    #[test]
+    fn pesel_may_only_contain_digits() {
+        let pesel_input = "4405140145a".to_string();
+        let pesel = super::PESEL::from_str(pesel_input.as_str());
+
+        assert_eq!(true, pesel.is_err());
+//        assert_eq!((pesel.expect_err("PESEL may only contain digits!"));
     }
 
 //    #[test]
