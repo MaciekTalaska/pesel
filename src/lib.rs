@@ -14,6 +14,7 @@ pub struct PESEL {
     random3:    u8,         // ...data
     gender:     u8,         // biological gender
     checksum:   u8,         // checksum used for validation
+    // all fields below are used for PESEL validation check
     a:          u8,
     b:          u8,
     c:          u8,
@@ -24,7 +25,6 @@ pub struct PESEL {
     h:          u8,
     i:          u8,
     j:          u8,
-    k:          u8,
 }
 
 #[derive(Debug)]
@@ -79,7 +79,7 @@ impl FromStr for PESEL {
         let h = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
         let i = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
         let j = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
-        let k = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+//        let k = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
 
         Ok(PESEL{
             raw: s.clone().to_string(),
@@ -101,7 +101,7 @@ impl FromStr for PESEL {
             h,
             i,
             j,
-            k,
+//            k,
         })
     }
 }
@@ -118,8 +118,7 @@ impl PESEL {
             self.h +
             9 * self.i +
             7 * self.j;
-        let rest =  sum % 10;
-        (self.k == rest)
+        self.checksum == (sum % 10)
     }
 
     pub fn is_male(&self) -> bool {
