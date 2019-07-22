@@ -9,22 +9,19 @@ pub struct PESEL {
     yob:        u8,         // year of birth (could cover 5 centuries)
     mob:        u8,         // month of birth
     dob:        u8,         // day of birth
-    random1:    u8,         // some...
-    random2:    u8,         // ...random
-    random3:    u8,         // ...data
     gender:     u8,         // biological gender
     checksum:   u8,         // checksum used for validation
     // all fields below are used for PESEL validation check
-    a:          u8,
-    b:          u8,
-    c:          u8,
-    d:          u8,
-    e:          u8,
-    f:          u8,
-    g:          u8,
-    h:          u8,
-    i:          u8,
-    j:          u8,
+    a:          u8,         // yob (1)
+    b:          u8,         // yob (2)
+    c:          u8,         // mob (1)
+    d:          u8,         // mob (2)
+    e:          u8,         // dob (1)
+    f:          u8,         // dob (2)
+    g:          u8,         // random1
+    h:          u8,         // random2
+    i:          u8,         // random3
+    j:          u8,         // gender
 }
 
 #[derive(Debug)]
@@ -59,9 +56,6 @@ impl FromStr for PESEL {
         }
         let checksum = s[10..11].parse::<u8>().unwrap();
         let gender  = s[9..10].parse::<u8>().unwrap();
-        let random3 = s[8..9].parse::<u8>().unwrap();
-        let random2 = s[7..8].parse::<u8>().unwrap();
-        let random1 = s[6..7].parse::<u8>().unwrap();
 
         let yob = s[0..2].parse::<u8>().unwrap();
         let mob = s[2..4].parse::<u8>().unwrap();
@@ -79,16 +73,12 @@ impl FromStr for PESEL {
         let h = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
         let i = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
         let j = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
-//        let k = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
 
         Ok(PESEL{
             raw: s.clone().to_string(),
             yob,
             mob,
             dob,
-            random1,
-            random2,
-            random3,
             gender,
             checksum,
             a,
@@ -101,7 +91,6 @@ impl FromStr for PESEL {
             h,
             i,
             j,
-//            k,
         })
     }
 }
