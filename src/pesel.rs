@@ -1,6 +1,5 @@
-use std::str::FromStr;
-
 use crate::pesel_parsing_error::PESELParsingError;
+use std::str::FromStr;
 
 const PESEL_LENGTH: usize = 11;
 
@@ -74,6 +73,15 @@ impl FromStr for PESEL {
             i,
             j,
         })
+    }
+}
+
+impl std::fmt::Display for PESEL {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "PESEL: {}\n\
+        date of birth: {}-{}-{}\n\
+        gender: {}\n\
+        valid: {}", self.raw, self.yob, self.mob, self.dob, self.gender, self.is_valid())
     }
 }
 

@@ -1,8 +1,11 @@
-//mod lib;
-//
+use std::str::FromStr;
+use pesel::pesel::PESEL as PESEL;
+
 fn main() {
-//    // that is just a sample PESEL number taken from Wikipedia article
-//    let pesel = lib::PESEL::from_str("44051401458").unwrap();
-//
-//    println!("pesel is {:?}", pesel);
+    let pesel_number ="44051401458".to_string();
+    let pesel = PESEL::from_str(pesel_number.as_str());
+    match pesel {
+        Ok(t) => println!("{}", t),
+        _ => panic!("invalid PESEL provided")
     }
+}
