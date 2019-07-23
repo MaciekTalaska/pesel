@@ -34,6 +34,10 @@ impl FromStr for PESEL {
         if s.chars().any(|f| !f.is_ascii_digit()) {
             return Err(PESELParsingError::new("PESEL may only contain digits!"));
         }
+        // TODO: add extra validity check:
+        // a) month could be: 0-12, 20-32, 40-52, 60-72, 80-92
+        // b) year could be: 0-99
+        // c) day could be max 31
         // TODO: Q: should PESEL become automatically invalidated (and thus impossible to create) if algorithm based validation fails?
         let checksum = s[10..11].parse::<u8>().unwrap();
         let gender  = s[9..10].parse::<u8>().unwrap();
@@ -79,9 +83,9 @@ impl FromStr for PESEL {
 impl std::fmt::Display for PESEL {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         write!(f, "PESEL: {}\n\
-        date of birth: {}-{}-{}\n\
+        date of birth: {}\n\
         gender: {}\n\
-        valid: {}", self.raw, self.yob, self.mob, self.dob, self.gender, self.is_valid())
+        valid: {}", self.raw, self.date_of_birth(), self.gender_name(), self.is_valid())
     }
 }
 
@@ -108,12 +112,27 @@ impl PESEL {
         self.gender % 2 == 0
     }
 
-    pub fn year_of_birth() -> u16 {
-        return 0;
+    pub fn date_of_birth(&self) -> String {
+        let century:u16 = match self.mob {
+            0...12 => 1900,
+            20...32 => 2000,
+            40...52 => 2100,
+            60...72 => 2200,
+            80...92 => 1800,
+            _ => panic!("invalid PESEL")
+        };
+        let year :u16 = self.yob as u16 + century;
+        let month = self.mob;
+        let day = self.dob;
+
+        format!("{}-{:02}-{:02}", year, month, day)
     }
 
-    pub fn full_date_of_birth() -> u32 {
-        return 0;
+    pub fn gender_name(&self) -> String {
+        match self.is_female() {
+            true => format!("female"),
+            false => format!("male")
+        }
     }
 }
 
