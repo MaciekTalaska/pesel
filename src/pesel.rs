@@ -6,8 +6,8 @@ const PESEL_LENGTH: usize = 11;
 #[derive(Debug)]
 pub struct PESEL {
     raw:        String,     // raw PESEL as &str
-    yob:        u8,         // year of birth (could cover 5 centuries)
-    mob:        u8,         // month of birth
+    yob:        u8,         // year of birth
+    mob:        u8,         // month of birth, codes century as well (could cover 5 centuries)
     dob:        u8,         // day of birth
     gender:     u8,         // biological gender
     checksum:   u8,         // checksum used for validation
@@ -34,18 +34,28 @@ impl FromStr for PESEL {
         if s.chars().any(|f| !f.is_ascii_digit()) {
             return Err(PESELParsingError::new("PESEL may only contain digits!"));
         }
-        // TODO: add extra validity check:
-        // a) month could be: 0-12, 20-32, 40-52, 60-72, 80-92
-        // b) year could be: 0-99
-        // c) day could be max 31
         // TODO: Q: should PESEL become automatically invalidated (and thus impossible to create) if algorithm based validation fails?
+        // This Q above should probably answered NO. This is due to the fact, that some people have been assigned PESEL numbers that do not go through an algorithmic validation, but from the perspective of the State - are still valid. I believe there is a database with all the exceptions stored, and making it more restrictive than it is in real life does not make any sense.
         let checksum = s[10..11].parse::<u8>().unwrap();
         let gender  = s[9..10].parse::<u8>().unwrap();
 
+        // extra validity check in regards to date:
+        // a) year could be: 0-99 - no need to check, as it is not possible to code anything more than 99 on 2 decimal places
         let yob = s[0..2].parse::<u8>().unwrap();
         let mob = s[2..4].parse::<u8>().unwrap();
+        // a) month could be: 0-12, 20-32, 40-52, 60-72, 80-92
+        if (mob > 12 && mob < 20) ||
+            (mob > 32 && mob < 40 ) ||
+            (mob > 52 && mob < 60) ||
+            (mob > 72 && mob < 80) ||
+            mob > 92 {
+            return Err(PESELParsingError::new("Invalid PESEL! Bad century coded"))
+        }
         let dob = s[4..6].parse::<u8>().unwrap();
-
+        // b) day could be max 31
+        if dob > 31 {
+            return Err(PESELParsingError::new("Invalid PESEL! Day exceeds 31"))
+        }
 
         let mut all_chars = s.chars();
         let a = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
@@ -200,6 +210,22 @@ mod pesel_validator_tests {
 
         assert_eq!(true, pesel.is_err());
 //        assert_eq!((pesel.expect_err("PESEL may only contain digits!"));
+    }
+
+    #[test]
+    fn pesel_should_have_proper_century_coded() {
+        let pesel_input = "44951201458".to_string();
+        let pesel = super::PESEL::from_str(pesel_input.as_str());
+
+        assert_eq!(true, pesel.is_err());
+    }
+
+    #[test]
+    fn birth_day_should_not_exceed_31() {
+        let pesel_input = "44053201458".to_string();
+        let pesel = super::PESEL::from_str(pesel_input.as_str());
+
+        assert_eq!(true, pesel.is_err());
     }
 
 //    #[test]
