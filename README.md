@@ -36,7 +36,7 @@ b) generating PESEL number, based on date of birth of a person and their biologi
 ```rust
 
 fn some_other_function() {
-    let generated_pesel = PESEL::new(1980, 05, 26, true);
+    let generated_pesel = PESEL::new(1980, 05, 26, Pesel_Gener::Male);
     println!("generted pesel: {}", generated_pesel);
 }
 ```
