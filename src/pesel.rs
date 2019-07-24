@@ -1,6 +1,8 @@
 use crate::pesel_parsing_error::PESELParsingError;
 use std::str::FromStr;
 
+use rand::Rng;
+
 const PESEL_LENGTH: usize = 11;
 
 #[derive(Debug)]
@@ -22,6 +24,63 @@ pub struct PESEL {
     h:          u8,         // random2
     i:          u8,         // random3
     j:          u8,         // gender
+}
+
+
+impl PESEL {
+    // TODO: use Enum for gender, not bool
+    pub fn new(year: u16, month: u8, day: u8, male: bool) -> PESEL {
+        // TODO: what to do if dob is out of accepted range?
+//        if year < 1800 && year > 2299 {
+//            Err(PESELParsingError::new("date is out of range!"))
+//        }
+        let pesel_year = year % 100;
+        let century = match year {
+            1800...1899 => 80,
+            1900...1999 => 0,
+            2000...2099 => 20,
+            2100...2199 => 40,
+            2200...2299 => 60,
+            _ => 0,
+        };
+        let pesel_month = month + century as u8;
+        let checksum = 0;
+        let mut rng = rand::thread_rng();
+        let random1 = rng.gen_range(0,10) as u8;
+        let random2 = rng.gen_range(0,10) as u8;
+        let random3 = rng.gen_range(0,10) as u8;
+        // TODO: generate odd/even number depending on gender
+        let women = vec![0, 2, 4, 6, 8];
+        let men = vec![1, 3, 5, 7, 9];
+        let gender = match male {
+            true => men[0] as u8,
+            false => women[0] as u8,
+        };
+
+        let pesel_string =  format!("{:02}{:02}{:02}{:1}{:1}{:1}{:1}", pesel_year, pesel_month, day, random1, random2, random3, gender);
+        let mut all_chars = pesel_string.chars();
+        let a = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let b = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let c = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let d = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let e = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let f = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let g = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let h = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let i = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+        let j = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
+
+        let checksum = PESEL::calc_checksum(a, b, c, d, e, f, g, h, i, j);
+
+        let pesel_string_complete =  format!("{:02}{:02}{:02}{:1}{:1}{:1}{:1}{:1}", pesel_year, pesel_month, day, random1, random2, random3, gender, checksum );
+
+
+        println!("PESEL string in PESEL::new: {}", pesel_string_complete);
+//        PESEL::from_str(pesel_string_complete.as_str()).unwrap()
+        let pesel = PESEL::from_str(pesel_string_complete.as_str()).unwrap();
+        println!("generated pesel: (new) {}", pesel);
+        pesel
+    }
 }
 
 impl FromStr for PESEL {
@@ -100,18 +159,32 @@ impl std::fmt::Display for PESEL {
 }
 
 impl PESEL {
+    fn calc_checksum(a: u8, b: u8, c:u8, d:u8, e:u8, f:u8, g:u8, h:u8, i:u8, j:u8) -> u8 {
+        let sum:u16 = 9 * a as u16 +
+            7 * b as u16 +
+            3 * c as u16 +
+            d as u16 +
+            9 * e as u16 +
+            7 * f as u16 +
+            3 * g as u16 +
+            h as u16 +
+            9 * i as u16 +
+            7 * j as u16;
+        (sum % 10) as u8
+    }
+
     pub fn is_valid(&self) -> bool {
-        let sum =  9 * self.a +
-            7 * self.b +
-            3 * self.c +
-            self.d +
-            9 * self.e +
-            7 * self.f +
-            3 * self.g +
-            self.h +
-            9 * self.i +
-            7 * self.j;
-        self.checksum == (sum % 10)
+        let sum:u16 =  9 * self.a as u16 +
+            7 * self.b as u16 +
+            3 * self.c as u16 +
+            self.d as u16 +
+            9 * self.e as u16 +
+            7 * self.f as u16 +
+            3 * self.g as u16 +
+            self.h as u16 +
+            9 * self.i as u16 +
+            7 * self.j as u16;
+        self.checksum == (sum % 10) as u8
     }
 
     pub fn is_male(&self) -> bool {
@@ -241,14 +314,65 @@ mod pesel_validator_tests {
         assert_eq!("1944-05-14", pesel.date_of_birth());
     }
 
-//    #[test]
-//    fn additional_test() {
-//        let pesel_input = "44051401459".to_string();
-//        let pesel = super::PESEL::from_str(pesel_input.as_str());
-//        let result = match pesel {
-//            Ok(t) => Some(t),
-//            Err() => None,
-//        };
-//    }
+    #[test]
+    fn additional_test() {
+        let pesel_input = "44051401459".to_string();
+        let pesel = super::PESEL::from_str(pesel_input.as_str());
+        let result = match pesel {
+            Ok(t) => Some(t),
+            Err(e) => None,
+        };
+
+        assert_eq!(false, result.unwrap().is_valid());
+    }
+
+    #[test]
+    fn generated_pesel_should_be_valid() {
+        let should_be_female = true;
+        let pesel = super::PESEL::new(1981, 06, 27, !should_be_female);
+
+        println!("pesel.checksum: {}", pesel.checksum);
+        assert_eq!(true, pesel.is_valid());
+//        assert_eq!(false, pesel.is_male());
+//        assert_eq!(true, pesel.is_female());
+    }
+
+    #[test]
+    fn generated_pesel_should_have_proper_gender_set() {
+        let should_be_female = true;
+        let pesel = super::PESEL::new(1981, 06, 27, !should_be_female);
+
+        assert_eq!(should_be_female, pesel.is_female());
+        assert_eq!("female", pesel.gender_name());
+    }
+
+    #[test]
+    fn generated_pesel_should_have_proper_gender_set2() {
+        let should_be_female = false;
+        let pesel = super::PESEL::new(1981, 06, 27, !should_be_female);
+
+        assert_eq!(should_be_female, pesel.is_female());
+        assert_eq!("male", pesel.gender_name());
+    }
+
+    #[test]
+    fn generated_pesel_should_print_proper_birth_date() {
+        let should_be_female = true;
+        let pesel = super::PESEL::new(1981, 06, 27, !should_be_female);
+
+        assert_eq!("1981-06-27", pesel.date_of_birth());
+    }
+
+    #[test]
+    fn check_for_add_with_overflow() {
+        // This test is very specific. It makes sure, that generated pesel, containing many high values (digits) will not result in overflow when calculating checksum
+        let year = 2299;
+        let month = 12;
+        let day = 31;
+
+        let pesel = super::PESEL::new(year, month, day, true);
+
+        assert_eq!(true, pesel.is_valid());
+    }
 }
 

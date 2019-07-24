@@ -8,4 +8,8 @@ fn main() {
         Ok(t) => println!("{}", t),
         _ => panic!("invalid PESEL provided")
     }
+
+    println!("--- PESEL generation ----");
+    let generated_pesel = PESEL::new(1980, 05, 26, true);
+    println!("generted pesel: {}", generated_pesel);
 }
