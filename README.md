@@ -9,7 +9,7 @@ What is PESEL number?
 
 PESEL is national identification number used in Poland. Every citizen of Republic of Poland is assigned PESEL when being born (and since 2015 this should also apply to foreigners living in Poland for more than 2 months). 
 
-There are some interesting factst about the PESEL number - [find more on Wikipedia](https://en.wikipedia.org/wiki/PESEL)
+There are some interesting facts about the PESEL number - [find more on Wikipedia](https://en.wikipedia.org/wiki/PESEL)
 
 Usage & Examples
 =====
@@ -36,7 +36,7 @@ b) generating PESEL number, based on date of birth of a person and their biologi
 ```rust
 
 fn some_other_function() {
-    let generated_pesel = PESEL::new(1980, 05, 26, Pesel_Gener::Male);
+    let generated_pesel = PESEL::new(1980, 05, 26, PeselGender::Male);
     println!("generted pesel: {}", generated_pesel);
 }
 ```
