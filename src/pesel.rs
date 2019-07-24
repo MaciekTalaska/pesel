@@ -53,7 +53,6 @@ impl PESEL {
         let random2 = rng.gen_range(0,10) as u8;
         let random3 = rng.gen_range(0,10) as u8;
 
-
         let women = vec![0, 2, 4, 6, 8];
         let men = vec![1, 3, 5, 7, 9];
         let gender = match pesel_gender {
@@ -78,7 +77,6 @@ impl PESEL {
 
         let pesel_string_complete =  format!("{:02}{:02}{:02}{:1}{:1}{:1}{:1}{:1}", pesel_year, pesel_month, day, random1, random2, random3, gender, checksum );
 
-
         PESEL::from_str(pesel_string_complete.as_str()).unwrap()
     }
 }
@@ -93,12 +91,12 @@ impl FromStr for PESEL {
         if s.chars().any(|f| !f.is_ascii_digit()) {
             return Err(PESELParsingError::new("PESEL may only contain digits!"));
         }
-        // TODO: Q: should PESEL become automatically invalidated (and thus impossible to create) if algorithm based validation fails?
-        // This Q above should probably answered NO. This is due to the fact, that some people have been assigned PESEL numbers that do not go through an algorithmic validation, but from the perspective of the State - are still valid. I believe there is a database with all the exceptions stored, and making it more restrictive than it is in real life does not make any sense.
+        // Q: should PESEL become automatically invalidated (and thus impossible to create) if algorithm based validation fails?
+        // The answer for the above question should be NO. This is due to the fact, that some people have been assigned PESEL numbers that do not go through an algorithmic validation, but from the perspective of the State - are still valid. I believe there is a database with all the exceptions stored, and making it more restrictive than it is in real life does not make any sense.
         let checksum = s[10..11].parse::<u8>().unwrap();
         let gender  = s[9..10].parse::<u8>().unwrap();
 
-        // extra validity check in regards to date:
+        // Extra validity check in regards to date:
         // a) year could be: 0-99 - no need to check, as it is not possible to code anything more than 99 on 2 decimal places
         let yob = s[0..2].parse::<u8>().unwrap();
         let mob = s[2..4].parse::<u8>().unwrap();
@@ -174,17 +172,9 @@ impl PESEL {
     }
 
     pub fn is_valid(&self) -> bool {
-        let sum:u16 =  9 * self.a as u16 +
-            7 * self.b as u16 +
-            3 * self.c as u16 +
-            self.d as u16 +
-            9 * self.e as u16 +
-            7 * self.f as u16 +
-            3 * self.g as u16 +
-            self.h as u16 +
-            9 * self.i as u16 +
-            7 * self.j as u16;
-        self.checksum == (sum % 10) as u8
+        let calculated_checksum = PESEL::calc_checksum(self.a, self.b, self.c, self.d, self.e, self.f, self.g, self.h, self.i, self.j);
+
+        self.checksum == calculated_checksum
     }
 
     pub fn is_male(&self) -> bool {
