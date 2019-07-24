@@ -11,7 +11,38 @@ PESEL is national identification number used in Poland. Every citizen of Republi
 
 There are some interesting factst about the PESEL number - [find more on Wikipedia](https://en.wikipedia.org/wiki/PESEL)
 
-TODO:
------
+Usage & Examples
+=====
 
- - [ ] generating valid PESEL numbers
+This library offers two main features:
+
+a) creating PESEL from String (and performing some checks to make sure PESEL is valid)
+
+```rust
+use std::str::FromStr;
+
+fn some_function() {
+    let pesel_number ="44051401458".to_string();
+    let pesel = PESEL::from_str(pesel_number.as_str());
+    match pesel {
+        Ok(t) => println!("{}", t),
+        _ => panic!("invalid PESEL provided")
+    }
+}
+```
+
+b) generating PESEL number, based on date of birth of a person and their biological gender
+
+```rust
+
+fn some_other_function() {
+    let generated_pesel = PESEL::new(1980, 05, 26, true);
+    println!("generted pesel: {}", generated_pesel);
+}
+```
+
+
+TODO
+----
+
+ - [ ] validate PESEL numbers in bulk (ideally: reading from file)
