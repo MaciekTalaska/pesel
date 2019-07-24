@@ -5,6 +5,11 @@ use rand::Rng;
 
 const PESEL_LENGTH: usize = 11;
 
+pub enum PeselGender {
+    Male,
+    Female,
+}
+
 #[derive(Debug)]
 pub struct PESEL {
     raw:        String,     // raw PESEL as &str
@@ -28,8 +33,7 @@ pub struct PESEL {
 
 
 impl PESEL {
-    // TODO: use Enum for gender, not bool
-    pub fn new(year: u16, month: u8, day: u8, male: bool) -> PESEL {
+    pub fn new(year: u16, month: u8, day: u8, pesel_gender: PeselGender) -> PESEL {
         // TODO: what to do if dob is out of accepted range?
 //        if year < 1800 && year > 2299 {
 //            Err(PESELParsingError::new("date is out of range!"))
@@ -52,9 +56,9 @@ impl PESEL {
 
         let women = vec![0, 2, 4, 6, 8];
         let men = vec![1, 3, 5, 7, 9];
-        let gender = match male {
-            true => men[rng.gen_range(0,5)] as u8,
-            false => women[rng.gen_range(0,5)] as u8,
+        let gender = match pesel_gender {
+            PeselGender::Male => men[rng.gen_range(0, 5)] as u8,
+            PeselGender::Female => women[rng.gen_range(0, 5)] as u8,
         };
 
         let pesel_string =  format!("{:02}{:02}{:02}{:1}{:1}{:1}{:1}", pesel_year, pesel_month, day, random1, random2, random3, gender);
@@ -222,6 +226,7 @@ impl PESEL {
 #[cfg(test)]
 mod pesel_validator_tests {
     use std::str::FromStr;
+    use crate::pesel::PeselGender;
 
     #[test]
     fn building_pesel_from_string() {
@@ -329,10 +334,11 @@ mod pesel_validator_tests {
     #[test]
     fn generated_pesel_should_be_valid() {
         let should_be_female = true;
-        let pesel = super::PESEL::new(1981, 06, 27, !should_be_female);
+        let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female);
 
         println!("pesel.checksum: {}", pesel.checksum);
         assert_eq!(true, pesel.is_valid());
+        assert_eq!(should_be_female, pesel.is_female());
 //        assert_eq!(false, pesel.is_male());
 //        assert_eq!(true, pesel.is_female());
     }
@@ -340,7 +346,7 @@ mod pesel_validator_tests {
     #[test]
     fn generated_pesel_should_have_proper_gender_set() {
         let should_be_female = true;
-        let pesel = super::PESEL::new(1981, 06, 27, !should_be_female);
+        let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female);
 
         assert_eq!(should_be_female, pesel.is_female());
         assert_eq!("female", pesel.gender_name());
@@ -349,7 +355,7 @@ mod pesel_validator_tests {
     #[test]
     fn generated_pesel_should_have_proper_gender_set2() {
         let should_be_female = false;
-        let pesel = super::PESEL::new(1981, 06, 27, !should_be_female);
+        let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Male);
 
         assert_eq!(should_be_female, pesel.is_female());
         assert_eq!("male", pesel.gender_name());
@@ -357,8 +363,7 @@ mod pesel_validator_tests {
 
     #[test]
     fn generated_pesel_should_print_proper_birth_date() {
-        let should_be_female = true;
-        let pesel = super::PESEL::new(1981, 06, 27, !should_be_female);
+        let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female);
 
         assert_eq!("1981-06-27", pesel.date_of_birth());
     }
@@ -370,7 +375,7 @@ mod pesel_validator_tests {
         let month = 12;
         let day = 31;
 
-        let pesel = super::PESEL::new(year, month, day, true);
+        let pesel = super::PESEL::new(year, month, day, PeselGender::Male);
 
         assert_eq!(true, pesel.is_valid());
     }

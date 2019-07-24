@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use pesel::pesel::PESEL as PESEL;
+use pesel::pesel::{PESEL as PESEL, PeselGender};
 
 fn main() {
     let pesel_number ="44051401458".to_string();
@@ -10,6 +10,6 @@ fn main() {
     }
 
     println!("--- PESEL generation ----");
-    let generated_pesel = PESEL::new(1980, 05, 26, true);
+    let generated_pesel = PESEL::new(1980, 05, 26, PeselGender::Male );
     println!("generted pesel: {}", generated_pesel);
 }
