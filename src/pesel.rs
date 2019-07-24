@@ -44,17 +44,17 @@ impl PESEL {
             _ => 0,
         };
         let pesel_month = month + century as u8;
-        let checksum = 0;
         let mut rng = rand::thread_rng();
         let random1 = rng.gen_range(0,10) as u8;
         let random2 = rng.gen_range(0,10) as u8;
         let random3 = rng.gen_range(0,10) as u8;
-        // TODO: generate odd/even number depending on gender
+
+
         let women = vec![0, 2, 4, 6, 8];
         let men = vec![1, 3, 5, 7, 9];
         let gender = match male {
-            true => men[0] as u8,
-            false => women[0] as u8,
+            true => men[rng.gen_range(0,5)] as u8,
+            false => women[rng.gen_range(0,5)] as u8,
         };
 
         let pesel_string =  format!("{:02}{:02}{:02}{:1}{:1}{:1}{:1}", pesel_year, pesel_month, day, random1, random2, random3, gender);
@@ -320,7 +320,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str(pesel_input.as_str());
         let result = match pesel {
             Ok(t) => Some(t),
-            Err(e) => None,
+            Err(_e) => None,
         };
 
         assert_eq!(false, result.unwrap().is_valid());
