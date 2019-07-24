@@ -79,11 +79,7 @@ impl PESEL {
         let pesel_string_complete =  format!("{:02}{:02}{:02}{:1}{:1}{:1}{:1}{:1}", pesel_year, pesel_month, day, random1, random2, random3, gender, checksum );
 
 
-        println!("PESEL string in PESEL::new: {}", pesel_string_complete);
-//        PESEL::from_str(pesel_string_complete.as_str()).unwrap()
-        let pesel = PESEL::from_str(pesel_string_complete.as_str()).unwrap();
-        println!("generated pesel: (new) {}", pesel);
-        pesel
+        PESEL::from_str(pesel_string_complete.as_str()).unwrap()
     }
 }
 
