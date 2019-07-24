@@ -51,12 +51,9 @@ impl PESEL {
 
         let pesel_string =  format!("{:02}{:02}{:02}{:1}{:1}{:1}{:1}", pesel_year, pesel_month, day, random1, random2, random3, gender);
 
-        let (a, b, c, d, e, f, g, h, i, j) = PESEL::extract_pesel_factors(pesel_string);
-        let checksum = PESEL::calc_checksum(a, b, c, d, e, f, g, h, i, j);
+        let checksum = PESEL::calc_checksum_from_pesel_string(&pesel_string);
 
-        let pesel_string_complete =  format!("{:02}{:02}{:02}{:1}{:1}{:1}{:1}{:1}", pesel_year, pesel_month, day, random1, random2, random3, gender, checksum );
-
-        PESEL::from_str(pesel_string_complete.as_str()).unwrap()
+        PESEL::from_str(format!("{}{:1}", &pesel_string, checksum).as_str()).unwrap()
     }
 }
 
@@ -79,7 +76,7 @@ impl FromStr for PESEL {
         // a) year could be: 0-99 - no need to check, as it is not possible to code anything more than 99 on 2 decimal places
         let yob = s[0..2].parse::<u8>().unwrap();
         let mob = s[2..4].parse::<u8>().unwrap();
-        // a) month could be: 0-12, 20-32, 40-52, 60-72, 80-92
+        // b) month could be: 0-12, 20-32, 40-52, 60-72, 80-92
         if (mob > 12 && mob < 20) ||
             (mob > 32 && mob < 40 ) ||
             (mob > 52 && mob < 60) ||
@@ -88,12 +85,12 @@ impl FromStr for PESEL {
             return Err(PESELParsingError::new("Invalid PESEL! Only dates between 1800 and 2299 are valid!"))
         }
         let dob = s[4..6].parse::<u8>().unwrap();
-        // b) day could be max 31
+        // c) day could be max 31
         if dob > 31 {
             return Err(PESELParsingError::new("Invalid PESEL! Day exceeds 31"))
         }
 
-        let (a, b, c, d, e, f, g, h, i, j) = PESEL::extract_pesel_factors(s.to_string());
+        let (a, b, c, d, e, f, g, h, i, j) = PESEL::extract_pesel_factors(s);
 
         Ok(PESEL{
             raw: s.clone().to_string(),
@@ -148,6 +145,11 @@ impl PESEL {
         gender
     }
 
+    fn calc_checksum_from_pesel_string(pesel_string: &str) -> u8 {
+        let (a, b, c, d, e, f, g, h, i, j) = PESEL::extract_pesel_factors(pesel_string);
+        PESEL::calc_checksum(a, b, c, d, e, f, g, h, i, j)
+    }
+
     fn calc_checksum(a: u8, b: u8, c:u8, d:u8, e:u8, f:u8, g:u8, h:u8, i:u8, j:u8) -> u8 {
         let sum:u16 = 9 * a as u16 +
             7 * b as u16 +
@@ -162,7 +164,7 @@ impl PESEL {
         (sum % 10) as u8
     }
 
-    fn extract_pesel_factors(pesel_string: String) -> (u8, u8, u8, u8, u8, u8, u8, u8, u8, u8) {
+    fn extract_pesel_factors(pesel_string: &str) -> (u8, u8, u8, u8, u8, u8, u8, u8, u8, u8) {
         let mut all_chars = pesel_string.chars();
         let a = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
         let b = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
