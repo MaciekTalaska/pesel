@@ -2,6 +2,7 @@ use crate::pesel_parsing_error::PESELParsingError;
 use std::str::FromStr;
 
 use rand::Rng;
+use rand::prelude::ThreadRng;
 
 const PESEL_LENGTH: usize = 11;
 
@@ -39,26 +40,14 @@ impl PESEL {
 //            Err(PESELParsingError::new("date is out of range!"))
 //        }
         let pesel_year = year % 100;
-        let century = match year {
-            1800...1899 => 80,
-            1900...1999 => 0,
-            2000...2099 => 20,
-            2100...2199 => 40,
-            2200...2299 => 60,
-            _ => 0,
-        };
-        let pesel_month = month + century as u8;
+        let pesel_month = month + PESEL::calc_month_century_offset(year);
+
         let mut rng = rand::thread_rng();
         let random1 = rng.gen_range(0,10) as u8;
         let random2 = rng.gen_range(0,10) as u8;
         let random3 = rng.gen_range(0,10) as u8;
 
-        let women = vec![0, 2, 4, 6, 8];
-        let men = vec![1, 3, 5, 7, 9];
-        let gender = match pesel_gender {
-            PeselGender::Male => men[rng.gen_range(0, 5)] as u8,
-            PeselGender::Female => women[rng.gen_range(0, 5)] as u8,
-        };
+        let gender = PESEL::generate_gender_digit(pesel_gender, &mut rng);
 
         let pesel_string =  format!("{:02}{:02}{:02}{:1}{:1}{:1}{:1}", pesel_year, pesel_month, day, random1, random2, random3, gender);
 
@@ -96,7 +85,7 @@ impl FromStr for PESEL {
             (mob > 52 && mob < 60) ||
             (mob > 72 && mob < 80) ||
             mob > 92 {
-            return Err(PESELParsingError::new("Invalid PESEL! Bad century coded"))
+            return Err(PESELParsingError::new("Invalid PESEL! Only dates between 1800 and 2299 are valid!"))
         }
         let dob = s[4..6].parse::<u8>().unwrap();
         // b) day could be max 31
@@ -137,6 +126,28 @@ impl std::fmt::Display for PESEL {
 }
 
 impl PESEL {
+    fn calc_month_century_offset(year: u16) -> u8 {
+        let century = match year {
+            1800...1899 => 80,
+            1900...1999 => 0,
+            2000...2099 => 20,
+            2100...2199 => 40,
+            2200...2299 => 60,
+            _ => 0,
+        };
+        century
+    }
+
+    fn generate_gender_digit(pesel_gender: PeselGender, rng: &mut ThreadRng) -> u8 {
+        let women = vec![0, 2, 4, 6, 8];
+        let men = vec![1, 3, 5, 7, 9];
+        let gender = match pesel_gender {
+            PeselGender::Male => men[rng.gen_range(0, 5)] as u8,
+            PeselGender::Female => women[rng.gen_range(0, 5)] as u8,
+        };
+        gender
+    }
+
     fn calc_checksum(a: u8, b: u8, c:u8, d:u8, e:u8, f:u8, g:u8, h:u8, i:u8, j:u8) -> u8 {
         let sum:u16 = 9 * a as u16 +
             7 * b as u16 +
