@@ -6,6 +6,7 @@ use rand::prelude::ThreadRng;
 
 const PESEL_LENGTH: usize = 11;
 
+/// Enum to represent Male/Female
 pub enum PeselGender {
     Male,
     Female,
@@ -34,6 +35,19 @@ pub struct PESEL {
 
 
 impl PESEL {
+    /// Creates new PESEL strucutre based on:
+    /// - birth date (could be in the future!)
+    /// - biological gender
+    ///
+    /// Example:
+    /// ```rust
+    /// use pesel::pesel::{PESEL as PESEL, PeselGender};
+    ///
+    /// // some code here...
+    ///
+    /// let new_pesel = PESEL::new(1981, 05, 29, PeselGender::Female);
+    /// ```
+    /// Returned PESEL structure is checked using PESEL valiation algorithm (i.e. typing `new_pesel.is_valid()` should return `true` in all cases
     pub fn new(year: u16, month: u8, day: u8, pesel_gender: PeselGender) -> PESEL {
         // TODO: what to do if dob is out of accepted range?
 //        if year < 1800 && year > 2299 {
@@ -58,6 +72,36 @@ impl PESEL {
 impl FromStr for PESEL {
     type Err =  PESELParsingError;
 
+    /// This method implements parsing 11 character long string, containing only digits into PESEL number.
+    /// There are some checks performed:
+    /// - length of the string provided (11 characters)
+    /// - all characters have to be digits
+    /// - birth year must be between 1800 and 2299
+    /// - day should not exceed 31
+    /// - month should be of range 1..12
+    ///
+    /// Important note: as this function could be used to build a PESEL structure retrieved from database - no algorithm validity check against PESEL number is performed. This is due to the fact that some PESEL numbers in use were not generated correctly (but are recognized by State as valid ones).
+    ///
+    /// Example of use:
+    ///
+    /// ```rust
+    /// use std::str::FromStr;
+    /// use pesel::pesel::{PESEL as PESEL, PeselGender};
+    ///
+    /// // some code here...
+    ///
+    /// let pesel_number ="44051401458".to_string();
+    /// let pesel = PESEL::from_str(pesel_number.as_str());
+    /// match pesel {
+    /// Ok(t) => println!("{}", t),
+    /// _ => panic!("invalid PESEL provided")
+    /// }
+    /// ```
+    ///
+    /// In case an error occrus `PESELParsingError` with apropriate message is being returned. This may happen when:
+    /// - string is not of expected length (11 characters)
+    /// - not all characters inside string are digits
+    /// - year of birth is out of range
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.len() != PESEL_LENGTH {
             return Err(PESELParsingError::new("PESEL has to be of 11 chars long"));
@@ -118,6 +162,7 @@ impl std::fmt::Display for PESEL {
 }
 
 impl PESEL {
+    /// Utility function - returns triple of random u8s (this is needed to fill some extra space being part of PESEL number
     fn generate_random_values(rng: &mut ThreadRng) -> (u8, u8, u8) {
         let random1 = rng.gen_range(0, 10) as u8;
         let random2 = rng.gen_range(0, 10) as u8;
@@ -125,6 +170,7 @@ impl PESEL {
         (random1, random2, random3)
     }
 
+    /// Utility function - calculates offset to be added to month to code a century person has been born in
     fn calc_month_century_offset(year: u16) -> u8 {
         let century = match year {
             1800...1899 => 80,
@@ -137,6 +183,9 @@ impl PESEL {
         century
     }
 
+    /// Utility function - returns digit corresponding to biological gender.
+    /// Odd - represents man
+    /// Even - represents woman
     fn generate_gender_digit(pesel_gender: PeselGender, rng: &mut ThreadRng) -> u8 {
         let women = vec![0, 2, 4, 6, 8];
         let men = vec![1, 3, 5, 7, 9];
@@ -147,11 +196,13 @@ impl PESEL {
         gender
     }
 
+    /// Utility function - calculates checksum directly from PESEL string
     fn calc_checksum_from_pesel_string(pesel_string: &str) -> u8 {
         let (a, b, c, d, e, f, g, h, i, j) = PESEL::extract_pesel_factors(pesel_string);
         PESEL::calc_checksum(a, b, c, d, e, f, g, h, i, j)
     }
 
+    /// Utility function - calculates checksum when given all the factors as parameters
     fn calc_checksum(a: u8, b: u8, c:u8, d:u8, e:u8, f:u8, g:u8, h:u8, i:u8, j:u8) -> u8 {
         let sum:u16 = 9 * a as u16 +
             7 * b as u16 +
@@ -166,6 +217,7 @@ impl PESEL {
         (sum % 10) as u8
     }
 
+    /// Utility function - extracts all factors (a..j) from a string representing PESEL
     fn extract_pesel_factors(pesel_string: &str) -> (u8, u8, u8, u8, u8, u8, u8, u8, u8, u8) {
         let mut all_chars = pesel_string.chars();
         let a = all_chars.next().unwrap().to_digit(10).unwrap() as u8;
@@ -182,20 +234,47 @@ impl PESEL {
         (a, b, c, d, e, f, g, h, i, j)
     }
 
+    /// Checks if PESEL number is properly generated - i.e. if algorithmic check on all fields is equal to checksum (which is a part of PESEL number)
+    ///
+    /// PESEL validation algorithm is as follows:
+    /// 1. PESEL number is 11 digits, last one is checksum. This gives 10 digits.
+    /// 2. The digits are usually called a, b, c, d, e, f, g, h, i, j
+    /// 3. First step is to calculate special sum of all digits except checksum as follows:
+    ///     9 * a + 7 * b + 3 * c + 1....
+    /// 4. The sum calculated above modulo 10 should be equal to checksum
+    ///
+    /// Please note that some PESEL numbers that are in use in Poland are not properly generated, and thus this check may fail for a PESEL number that is officially used.
     pub fn is_valid(&self) -> bool {
         let calculated_checksum = PESEL::calc_checksum(self.a, self.b, self.c, self.d, self.e, self.f, self.g, self.h, self.i, self.j);
 
         self.checksum == calculated_checksum
     }
 
+    /// Returns information on biological gender of a person with specified PESEL number assgigned.
+    ///
+    /// This function returns true in case PESEL number is assigned to biological female
     pub fn is_male(&self) -> bool {
         self.gender % 2 != 0
     }
 
+    /// Returns information on biological gender of a person with specified PESEL number assigned.
+    ///
+    /// This function returns true in case PESEL number is assigned to biological female
     pub fn is_female(&self) -> bool {
         self.gender % 2 == 0
     }
 
+    // TODO: test it!
+    /// Returns biological gender as PeselGender enum
+    pub fn gender_type(&self) -> PeselGender {
+        match self.gender % 2 == 0 {
+            true => PeselGender::Female,
+            false => PeselGender::Male
+        }
+    }
+
+    /// Returns fully formatted date of birth.
+    /// The date is returned in YYYY-MM-DD format
     pub fn date_of_birth(&self) -> String {
         let century:u16 = match self.mob {
             0...12 => 1900,
@@ -212,6 +291,7 @@ impl PESEL {
         format!("{}-{:02}-{:02}", year, month, day)
     }
 
+    // Returns description of a biological gender of a person assigned PESEL number
     pub fn gender_name(&self) -> String {
         match self.is_female() {
             true => format!("female"),
@@ -220,6 +300,7 @@ impl PESEL {
     }
 }
 
+// TODO: make slight changes to test setup - according to the changes made to documentation and main.rs
 #[cfg(test)]
 mod pesel_validator_tests {
     use std::str::FromStr;

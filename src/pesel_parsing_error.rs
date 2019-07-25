@@ -1,6 +1,7 @@
 use std::error::Error;
 
 #[derive(Debug)]
+/// Custom error - used when constructing PESEL from String
 pub struct PESELParsingError {
     message: String
 }
