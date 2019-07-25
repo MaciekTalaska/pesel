@@ -7,6 +7,7 @@ use rand::prelude::ThreadRng;
 const PESEL_LENGTH: usize = 11;
 
 /// Enum to represent Male/Female
+#[derive(Debug, PartialEq)]
 pub enum PeselGender {
     Male,
     Female,
@@ -317,21 +318,23 @@ mod pesel_validator_tests {
     }
 
     #[test]
-    fn check_if_is_female() {
-        let pesel = super::PESEL::from_str("44051401458").unwrap();
-
-        assert_eq!(false, pesel.is_female());
-        assert_eq!("male", pesel.gender_name());
-        // TODO - check for proper PeselGender being returned
-    }
-
-    #[test]
     fn check_if_is_male() {
         let pesel = super::PESEL::from_str("44051401458").unwrap();
 
+        assert_eq!(false, pesel.is_female());
         assert_eq!(true, pesel.is_male());
         assert_eq!("male", pesel.gender_name());
-        // TODO - check for proper PeselGender being returned
+        assert_eq!(super::PeselGender::Male, pesel.gender_type());
+    }
+
+    #[test]
+    fn check_if_is_female() {
+        let pesel = super::PESEL::from_str("44051401468").unwrap();
+
+        assert_eq!(false, pesel.is_male());
+        assert_eq!(true, pesel.is_female());
+        assert_eq!("female", pesel.gender_name());
+        assert_eq!(super::PeselGender::Female, pesel.gender_type());
     }
 
     #[test]
