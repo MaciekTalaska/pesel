@@ -2,8 +2,8 @@ use std::str::FromStr;
 use pesel::pesel::{PESEL as PESEL, PeselGender};
 
 fn main() {
-    let pesel_number ="44051401458".to_string();
-    let pesel = PESEL::from_str(pesel_number.as_str());
+    let pesel_number ="44051401458";
+    let pesel = PESEL::from_str(pesel_number);
     match pesel {
         Ok(t) => println!("{}", t),
         _ => panic!("invalid PESEL provided")

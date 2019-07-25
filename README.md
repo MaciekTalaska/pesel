@@ -22,8 +22,8 @@ a) creating PESEL from String (and performing some checks to make sure PESEL is 
 use std::str::FromStr;
 
 fn some_function() {
-    let pesel_number ="44051401458".to_string();
-    let pesel = PESEL::from_str(pesel_number.as_str());
+    let pesel_number ="44051401458";
+    let pesel = PESEL::from_str(pesel_number);
     match pesel {
         Ok(t) => println!("{}", t),
         _ => panic!("invalid PESEL provided")
