@@ -43,9 +43,7 @@ impl PESEL {
         let pesel_month = month + PESEL::calc_month_century_offset(year);
 
         let mut rng = rand::thread_rng();
-        let random1 = rng.gen_range(0,10) as u8;
-        let random2 = rng.gen_range(0,10) as u8;
-        let random3 = rng.gen_range(0,10) as u8;
+        let (random1, random2, random3) = PESEL::generate_random_values(&mut rng);
 
         let gender = PESEL::generate_gender_digit(pesel_gender, &mut rng);
 
@@ -76,14 +74,11 @@ impl FromStr for PESEL {
         // a) year could be: 0-99 - no need to check, as it is not possible to code anything more than 99 on 2 decimal places
         let yob = s[0..2].parse::<u8>().unwrap();
         let mob = s[2..4].parse::<u8>().unwrap();
-        // b) month could be: 0-12, 20-32, 40-52, 60-72, 80-92
-        if (mob > 12 && mob < 20) ||
-            (mob > 32 && mob < 40 ) ||
-            (mob > 52 && mob < 60) ||
-            (mob > 72 && mob < 80) ||
-            mob > 92 {
-            return Err(PESELParsingError::new("Invalid PESEL! Only dates between 1800 and 2299 are valid!"))
+        // b) month could be: 1-12, 21-32, 41-52, 61-72, 81-92
+        if ! ((1..13).contains(&mob) || (21..33).contains(&mob) || (41..53).contains(&mob) || (61..73).contains(&mob) || (81..93).contains(&mob)) {
+            return Err(PESELParsingError::new("Invalid PESEL! Only dates between 1800 and 2299 are suppored!"))
         }
+
         let dob = s[4..6].parse::<u8>().unwrap();
         // c) day could be max 31
         if dob > 31 {
@@ -123,6 +118,13 @@ impl std::fmt::Display for PESEL {
 }
 
 impl PESEL {
+    fn generate_random_values(rng: &mut ThreadRng) -> (u8, u8, u8) {
+        let random1 = rng.gen_range(0, 10) as u8;
+        let random2 = rng.gen_range(0, 10) as u8;
+        let random3 = rng.gen_range(0, 10) as u8;
+        (random1, random2, random3)
+    }
+
     fn calc_month_century_offset(year: u16) -> u8 {
         let century = match year {
             1800...1899 => 80,
