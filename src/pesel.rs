@@ -318,27 +318,26 @@ mod pesel_validator_tests {
 
     #[test]
     fn check_if_is_female() {
-        let pesel_input = "44051401458";
+        let pesel = super::PESEL::from_str("44051401458").unwrap();
 
-        let pesel = super::PESEL::from_str(pesel_input).unwrap();
         assert_eq!(false, pesel.is_female());
         assert_eq!("male", pesel.gender_name());
+        // TODO - check for proper PeselGender being returned
     }
 
     #[test]
     fn check_if_is_male() {
-        let pesel_input = "44051401458";
+        let pesel = super::PESEL::from_str("44051401458").unwrap();
 
-        let pesel = super::PESEL::from_str(pesel_input).unwrap();
         assert_eq!(true, pesel.is_male());
         assert_eq!("male", pesel.gender_name());
+        // TODO - check for proper PeselGender being returned
     }
 
     #[test]
     fn zero_length_string_should_fail() {
-        let pesel_input = "";
+        let pesel = super::PESEL::from_str("");
 
-        let pesel = super::PESEL::from_str(pesel_input);
         assert_eq!(true, pesel.is_err());
         // TODO: implement std::cmp::PartialEq, for comparing like below
 //        assert_eq!(super::PESELParsingError::new("PESEL has to be of 11 chars long"), pesel);
@@ -346,24 +345,21 @@ mod pesel_validator_tests {
 
     #[test]
     fn proper_pesel_should_be_validated() {
-        let pesel_input = "44051401458";
-        let pesel = super::PESEL::from_str(pesel_input).unwrap();
+        let pesel = super::PESEL::from_str("44051401458").unwrap();
 
         assert_eq!(true, pesel.is_valid());
     }
 
     #[test]
     fn invalid_pesel_should_not_be_validated() {
-        let pesel_input = "44051401459";
-        let pesel = super::PESEL::from_str(pesel_input).unwrap();
+        let pesel = super::PESEL::from_str("44051401459").unwrap();
 
         assert_eq!(false, pesel.is_valid());
     }
 
     #[test]
     fn pesel_may_only_contain_digits() {
-        let pesel_input = "4405140145a";
-        let pesel = super::PESEL::from_str(pesel_input);
+        let pesel = super::PESEL::from_str("4405140145a");
 
         assert_eq!(true, pesel.is_err());
         // TODO: check if Error contains expected message
@@ -372,8 +368,7 @@ mod pesel_validator_tests {
 
     #[test]
     fn pesel_should_have_proper_century_coded() {
-        let pesel_input = "44951201458";
-        let pesel = super::PESEL::from_str(pesel_input);
+        let pesel = super::PESEL::from_str("44951201458");
 
         assert_eq!(true, pesel.is_err());
         // TODO: check if Error contains expected message
@@ -381,8 +376,7 @@ mod pesel_validator_tests {
 
     #[test]
     fn birth_day_should_not_exceed_31() {
-        let pesel_input = "44053201458";
-        let pesel = super::PESEL::from_str(pesel_input);
+        let pesel = super::PESEL::from_str("44053201458");
 
         assert_eq!(true, pesel.is_err());
         // TODO: check if Error contains expected message
@@ -390,16 +384,14 @@ mod pesel_validator_tests {
 
     #[test]
     fn birth_date_should_be_returned_as_ddmmyyyy() {
-        let pesel_input = "44051401458";
-        let pesel = super::PESEL::from_str(pesel_input).unwrap();
+        let pesel = super::PESEL::from_str("44051401458").unwrap();
 
         assert_eq!("1944-05-14", pesel.date_of_birth());
     }
 
     #[test]
     fn additional_test() {
-        let pesel_input = "44051401459";
-        let pesel = super::PESEL::from_str(pesel_input);
+        let pesel = super::PESEL::from_str("44051401459");
         let result = match pesel {
             Ok(t) => Some(t),
             Err(_e) => None,
