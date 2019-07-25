@@ -43,6 +43,7 @@ fn some_other_function() {
 }
 ```
 
+Please note that after PESEL number structure is constructed there is no way to change it - it stays immutable forever. 
 
 TODO
 ----
