@@ -23,6 +23,8 @@ use std::str::FromStr;
 
 fn some_function() {
     let pesel_number ="44051401458";
+    // you could also use literal as argument for from_str:
+    // let pesel = PESEL::from_str("44051401458");
     let pesel = PESEL::from_str(pesel_number);
     match pesel {
         Ok(t) => println!("{}", t),
