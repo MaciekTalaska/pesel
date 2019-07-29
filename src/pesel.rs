@@ -241,7 +241,7 @@ impl PESEL {
     /// 1. PESEL number is 11 digits, last one is checksum. This gives 10 digits.
     /// 2. The digits are usually called a, b, c, d, e, f, g, h, i, j
     /// 3. First step is to calculate special sum of all digits except checksum as follows:
-    ///     9 * a + 7 * b + 3 * c + 1....
+    ///     9*a + 7*b + 3*c + d + 9*e + 7*f + 3*g + h + 9*i + 7*j
     /// 4. The sum calculated above modulo 10 should be equal to checksum
     ///
     /// Please note that some PESEL numbers that are in use in Poland are not properly generated, and thus this check may fail for a PESEL number that is officially used.
@@ -251,7 +251,7 @@ impl PESEL {
         self.checksum == calculated_checksum
     }
 
-    /// Returns information on biological gender of a person with specified PESEL number assgigned.
+    /// Returns information on biological gender of a person with specified PESEL number assigned.
     ///
     /// This function returns true in case PESEL number is assigned to biological female
     pub fn is_male(&self) -> bool {
