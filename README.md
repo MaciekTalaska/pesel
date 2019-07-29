@@ -21,15 +21,19 @@ a) creating PESEL from String (and performing some checks to make sure PESEL is 
 ```rust
 use std::str::FromStr;
 
-fn some_function() {
-    let pesel_number ="44051401458";
-    // you could also use literal as argument for from_str:
-    // let pesel = PESEL::from_str("44051401458");
-    let pesel = PESEL::from_str(pesel_number);
-    match pesel {
-        Ok(t) => println!("{}", t),
-        _ => panic!("invalid PESEL provided")
-    }
+let pesel_number = "44051401458";
+let result = PESEL::from_str(pesel_number);
+match result {
+    Ok(pesel) => println!("PESEL: {}", pesel),
+    _ => println!("invalid PESEL provided"),
+}
+
+// alternatively, pass a string literal:
+
+let pesel = PESEL::from_str("44051401458");
+match result {
+    OK(pesel) => println!("PESEL: {}", pesel),
+    _ => println!("invalid PESEL string"),
 }
 ```
 
@@ -37,11 +41,12 @@ b) generating PESEL number, based on date of birth of a person and their biologi
 
 ```rust
 
-fn some_other_function() {
-    let generated_pesel = PESEL::new(1980, 05, 26, PeselGender::Male);
-    println!("generted pesel: {}", generated_pesel);
-}
+let generated_pesel = PESEL::new(1980, 05, 26, PeselGender::Male);
 ```
+
+Note: this method does not return any error!
+
+
 
 Please note that after PESEL number structure is constructed there is no way to change it - it stays immutable forever. 
 
