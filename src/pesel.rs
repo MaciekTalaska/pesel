@@ -37,9 +37,12 @@ pub struct PESEL {
 
 
 impl PESEL {
-    /// Creates new PESEL strucutre based on:
+    /// Tries to create new PESEL strucutre based on:
     /// - birth date (could be in the future!)
     /// - biological gender
+    ///
+    /// Returns Result<PESEL, PeselParsingError>
+    /// When PeselParsingError is returned it is mainly due to the fact that provided date of birth is invalid: for example 30th of February, 31st of April etc., or date is out range for PESEL (earlier than 1800 or after 2299)
     ///
     /// Example:
     /// ```rust
@@ -47,7 +50,11 @@ impl PESEL {
     ///
     /// // some code here...
     ///
-    /// let new_pesel = PESEL::new(1981, 05, 29, PeselGender::Female);
+    /// let result = PESEL::new(1981, 05, 29, PeselGender::Female);
+    /// match result {
+    ///     Ok(pesel) => println!("generated PESEL: {}", pesel),
+    ///     _ => println!("unable to create PESEL for specified date"),
+    /// }
     /// ```
     /// Returned PESEL structure is checked using PESEL valiation algorithm (i.e. typing `new_pesel.is_valid()` should return `true` in all cases
     pub fn new(year: u16, month: u8, day: u8, pesel_gender: PeselGender) -> Result<PESEL, PESELParsingError> {

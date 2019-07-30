@@ -30,7 +30,7 @@ match result {
 
 // alternatively, pass a string literal:
 
-let pesel = PESEL::from_str("44051401458");
+let result = PESEL::from_str("44051401458");
 match result {
     OK(pesel) => println!("PESEL: {}", pesel),
     _ => println!("invalid PESEL string"),
@@ -41,10 +41,16 @@ b) generating PESEL number, based on date of birth of a person and their biologi
 
 ```rust
 
-let generated_pesel = PESEL::new(1980, 05, 26, PeselGender::Male);
+let result = PESEL::new(1980, 05, 26, PeselGender::Male);
+match result {
+    Ok(pesel) => println!("generated PESEL: {}", pesel),
+    _ => println!("unable to create PESEL for specified date"),
+}
 ```
 
-Note: this method does not return any error!
+Note: behavior of this method changed. It used to return PESEL, now returns `Result<PESEL, PeselParsingError>`. Errors are usually due to:
+- provided date of birth being out of range for PESEL (earlier than 1800, later than 2299)
+- provided date of birth is not valid i.e.: 30th of February, 31st of April...
 
 
 
@@ -53,4 +59,5 @@ Please note that after PESEL number structure is constructed there is no way to 
 TODO
 ----
 
+ - [x] validate date before PESEL is created to avoid creation of PESEL for invalid date (31st of February, 31st of April, 31st of June...)
  - [ ] validate PESEL numbers in bulk (ideally: reading from file)
