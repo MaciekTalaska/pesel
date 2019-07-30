@@ -63,11 +63,12 @@ impl PESEL {
         // check if the date passed is valid date, i.e. not 30th of February etc.
         let date = Local.ymd_opt(year as i32, month as u32, day as u32);
 
-//         TODO: add tests for each case here: invalid birth date, date out of range
+        // TODO: add tests for each case here: invalid birth date, date out of range
         if date == chrono::offset::LocalResult::None {
             return Err(PESELParsingError::new("invalid birth date"));
         }
-        if year < 1800 && year > 2299 {
+        // TODO: add test for it
+        if year < 1800  || year > 2299 {
             return Err(PESELParsingError::new("date is out of range!"));
         }
 
@@ -322,6 +323,7 @@ impl PESEL {
 mod pesel_validator_tests {
     use std::str::FromStr;
     use crate::pesel::PeselGender;
+    use crate::pesel_parsing_error::PESELParsingError;
 
     #[test]
     fn building_pesel_from_string() {
@@ -473,5 +475,13 @@ mod pesel_validator_tests {
 
         assert_eq!(true, pesel.is_valid());
     }
+    #[test]
+    fn create_pesel_from_date_out_of_range_should_result_in_error() {
+        let pesel = super::PESEL::new(1799, 02, 06, PeselGender::Female);
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(PESELParsingError::new("date is out of range!"), pesel.err().unwrap());
+    }
+
 }
 
