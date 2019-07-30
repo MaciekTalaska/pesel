@@ -10,6 +10,7 @@ fn main() {
     }
 
     println!("--- PESEL generation ----");
-    let generated_pesel = PESEL::new(1980, 05, 26, PeselGender::Male );
+    // TODO: not sure it is so nice to have unwrap here, maybe for the sake of consistency with the above example using match & Result<Ok, Err> is a better idea?
+    let generated_pesel = PESEL::new(1980, 05, 26, PeselGender::Male ).unwrap();
     println!("generted pesel: {}", generated_pesel);
 }

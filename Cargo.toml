@@ -17,6 +17,7 @@ travis-ci = {repository = "MaciekTalaska/pesel", branch = "master"}
 
 [dependencies]
 rand = "0.7.0"
+chrono = "0.4.7"
 
 [profile.release]
 lto = true

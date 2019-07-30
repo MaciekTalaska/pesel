@@ -4,6 +4,9 @@ use std::str::FromStr;
 use rand::Rng;
 use rand::prelude::ThreadRng;
 
+use chrono::prelude::*;
+use chrono::offset::LocalResult::Single;
+
 const PESEL_LENGTH: usize = 11;
 
 /// Enum to represent Male/Female
@@ -49,11 +52,26 @@ impl PESEL {
     /// let new_pesel = PESEL::new(1981, 05, 29, PeselGender::Female);
     /// ```
     /// Returned PESEL structure is checked using PESEL valiation algorithm (i.e. typing `new_pesel.is_valid()` should return `true` in all cases
-    pub fn new(year: u16, month: u8, day: u8, pesel_gender: PeselGender) -> PESEL {
-        // TODO: what to do if dob is out of accepted range?
-//        if year < 1800 && year > 2299 {
-//            Err(PESELParsingError::new("date is out of range!"))
+    pub fn new(year: u16, month: u8, day: u8, pesel_gender: PeselGender) -> Result<PESEL, PESELParsingError> {
+        // check if the date passed is valid date, i.e. not 30th of February etc.
+        let date = Local.ymd_opt(year as i32, month as u32, day as u32);
+
+        // TODO: change function signature to make it work
+//         TODO: add tests for each case here
+        if date == chrono::offset::LocalResult::None {
+            return Err(PESELParsingError::new("invalid birth date"));
+        }
+//        match date {
+//            chrono::offset::LocalResult::None => Err(PESELParsingError::new("sth")),
+//            _ =>
 //        }
+//        if date != chrono::offset::LocalResult::Single {
+//            return Err(PESELParsingError::new("invalid date of birth!"));
+//        }
+        if year < 1800 && year > 2299 {
+            return Err(PESELParsingError::new("date is out of range!"));
+        }
+
         let pesel_year = year % 100;
         let pesel_month = month + PESEL::calc_month_century_offset(year);
 
@@ -66,7 +84,7 @@ impl PESEL {
 
         let checksum = PESEL::calc_checksum_from_pesel_string(&pesel_string);
 
-        PESEL::from_str(format!("{}{:1}", &pesel_string, checksum).as_str()).unwrap()
+        PESEL::from_str(format!("{}{:1}", &pesel_string, checksum).as_str())
     }
 }
 
@@ -406,7 +424,8 @@ mod pesel_validator_tests {
     #[test]
     fn generated_pesel_should_be_valid() {
         let should_be_female = true;
-        let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female);
+        // TODO: unwrap -> match Result?
+        let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female).unwrap();
 
         println!("pesel.checksum: {}", pesel.checksum);
         assert_eq!(true, pesel.is_valid());
@@ -418,7 +437,8 @@ mod pesel_validator_tests {
     #[test]
     fn generated_pesel_should_have_proper_gender_set() {
         let should_be_female = true;
-        let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female);
+        // TODO: unwrap -> match Result?
+        let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female).unwrap();
 
         assert_eq!(should_be_female, pesel.is_female());
         assert_eq!("female", pesel.gender_name());
@@ -427,7 +447,8 @@ mod pesel_validator_tests {
     #[test]
     fn generated_pesel_should_have_proper_gender_set2() {
         let should_be_female = false;
-        let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Male);
+        // TODO: unwrap -> match Result?
+        let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Male).unwrap();
 
         assert_eq!(should_be_female, pesel.is_female());
         assert_eq!("male", pesel.gender_name());
@@ -435,7 +456,8 @@ mod pesel_validator_tests {
 
     #[test]
     fn generated_pesel_should_print_proper_birth_date() {
-        let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female);
+        // TODO: unwrap -> match Result?
+        let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female).unwrap();
 
         assert_eq!("1981-06-27", pesel.date_of_birth());
     }
@@ -447,7 +469,8 @@ mod pesel_validator_tests {
         let month = 12;
         let day = 31;
 
-        let pesel = super::PESEL::new(year, month, day, PeselGender::Male);
+        // TODO: unwrap -> match Result?
+        let pesel = super::PESEL::new(year, month, day, PeselGender::Male).unwrap();
 
         assert_eq!(true, pesel.is_valid());
     }
