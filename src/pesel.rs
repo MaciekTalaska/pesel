@@ -4,8 +4,6 @@ use std::str::FromStr;
 use rand::Rng;
 use rand::prelude::ThreadRng;
 
-use chrono::prelude::*;
-use chrono::offset::LocalResult::Single;
 
 const PESEL_LENGTH: usize = 11;
 
@@ -53,21 +51,15 @@ impl PESEL {
     /// ```
     /// Returned PESEL structure is checked using PESEL valiation algorithm (i.e. typing `new_pesel.is_valid()` should return `true` in all cases
     pub fn new(year: u16, month: u8, day: u8, pesel_gender: PeselGender) -> Result<PESEL, PESELParsingError> {
+        use chrono::prelude::*;
+
         // check if the date passed is valid date, i.e. not 30th of February etc.
         let date = Local.ymd_opt(year as i32, month as u32, day as u32);
 
-        // TODO: change function signature to make it work
-//         TODO: add tests for each case here
+//         TODO: add tests for each case here: invalid birth date, date out of range
         if date == chrono::offset::LocalResult::None {
             return Err(PESELParsingError::new("invalid birth date"));
         }
-//        match date {
-//            chrono::offset::LocalResult::None => Err(PESELParsingError::new("sth")),
-//            _ =>
-//        }
-//        if date != chrono::offset::LocalResult::Single {
-//            return Err(PESELParsingError::new("invalid date of birth!"));
-//        }
         if year < 1800 && year > 2299 {
             return Err(PESELParsingError::new("date is out of range!"));
         }
