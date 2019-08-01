@@ -500,6 +500,62 @@ mod pesel_validator_tests {
 
         assert_eq!(true, pesel.is_valid());
     }
+
+    #[test]
+    fn creating_pesel_from_invalid_date_should_result_in_error() {
+        // 1993 for sure was not a leap year...
+        let pesel = super::PESEL::new(1993, 02, 29, PeselGender::Female);
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!( PESELParsingError::new("invalid birth date"), pesel.err().unwrap());
+    }
+
+    #[test]
+    fn parsing_pesel_from_invalid_date_should_result_in_error() {
+        // 1993 for sure was not a leap year...
+        let pesel = super::PESEL::from_str("83022998790");
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!( PESELParsingError::new("invalid birth date"), pesel.err().unwrap());
+    }
+
+    #[test]
+    fn crating_pesel_max_day_is_31() {
+        let pesel = super::PESEL::new(1982, 05, 32, PeselGender::Male);
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(PESELParsingError::new("invalid birth date"), pesel.err().unwrap());
+    }
+
+    // TODO: fix the code to make it work!
+    // I am not sure this test should be needed - this situation should be handled when using chrono, and checking for proper date
+    #[test]
+    fn parsing_pesel_max_day_is_31() {
+        let pesel = super::PESEL::from_str("97043289891");
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(PESELParsingError::new("Invalid PESEL! Day exceeds 31"), pesel.err().unwrap());
+    }
+
+    // TODO: fix the code to make it work!
+    // TODO: rename this test!
+    // this one actually checks for invalid date as such
+    #[test]
+    fn parsing_pesel_max_day_is_31_2() {
+        let pesel = super::PESEL::from_str("97043189891");
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(PESELParsingError::new("invalid birth date"), pesel.err().unwrap());
+    }
+
+    #[test]
+    fn parsing_pesel_containing_invalid_date_should_result_in_error() {
+        let pesel = super::PESEL::from_str("80063144451");
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(PESELParsingError::new("invalid birth date"), pesel.err().unwrap());
+    }
+
     #[test]
     fn create_pesel_from_date_out_of_range_should_result_in_error() {
         let pesel = super::PESEL::new(1799, 02, 06, PeselGender::Female);
