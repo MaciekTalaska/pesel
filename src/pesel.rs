@@ -61,15 +61,10 @@ impl PESEL {
 
         // check if the date passed is valid date, i.e. not 30th of February etc.
         // TODO: add tests for each case here: invalid birth date, date out of range
-        use chrono::prelude::*;
-        let date = Local.ymd_opt(year as i32, month as u32, day as u32);
-        if date == chrono::offset::LocalResult::None {
+        if ! PESEL::is_valid_date( year as i32, month as u32, day as u32) {
             return Err(PESELParsingError::new("invalid birth date"));
         }
-//        if ! PESEL::is_valid_date( year as i32, month as u32, day as u32) {
-//            return Err(PESELParsingError::new("invalid birth date"));
-//        }
-        // TODO: add test for it
+        // TODO: add test for date out of range 1800-2299
         if year < 1800  || year > 2299 {
             return Err(PESELParsingError::new("date is out of range!"));
         }
@@ -150,11 +145,11 @@ impl FromStr for PESEL {
             return Err(PESELParsingError::new("Invalid PESEL! Day exceeds 31"))
         }
         // TODO: year is not a proper year here. it only contains two last digits
-        let long_year = PESEL::calc_proper_year_from_pesel_encoded_month_and_year(yob, mob);
+        let real_year = PESEL::calc_proper_year_from_pesel_encoded_month_and_year(yob, mob);
         // TODO: month  here is already encoded in pesel format
         // TODO: probably a pesel_encoded_date_to_date function is needed here
         // but... what is the point of checking things twice? (when using PESEL::new)?
-        if ! PESEL::is_valid_date( long_year, (mob % 20) as u32, dob as u32) {
+        if ! PESEL::is_valid_date( real_year, (mob % 20) as u32, dob as u32) {
             return Err(PESELParsingError::new("invalid birth date"));
         }
 
@@ -196,15 +191,7 @@ impl PESEL {
         use chrono::prelude::*;
         let date = Local.ymd_opt(year, month, day);
 
-        // TODO: add tests for each case here: invalid birth date, date out of range
-//        (date != chrono::offset::LocalResult::None)
-        match date {
-//            chrono::LocalResult::None => false,
-//            chrono::LocalResult::Single(_t) => true,
-            chrono::offset::LocalResult::Single(_t) => true,
-            chrono::offset::LocalResult::None => false,
-            _ => false,
-        }
+        (date != chrono::offset::LocalResult::None)
     }
 
     /// Utility function - returns triple of random u8s (this is needed to fill some extra space being part of PESEL number
