@@ -58,15 +58,17 @@ impl PESEL {
     /// ```
     /// Returned PESEL structure is checked using PESEL valiation algorithm (i.e. typing `new_pesel.is_valid()` should return `true` in all cases
     pub fn new(year: u16, month: u8, day: u8, pesel_gender: PeselGender) -> Result<PESEL, PESELParsingError> {
-        use chrono::prelude::*;
 
         // check if the date passed is valid date, i.e. not 30th of February etc.
-        let date = Local.ymd_opt(year as i32, month as u32, day as u32);
-
         // TODO: add tests for each case here: invalid birth date, date out of range
+        use chrono::prelude::*;
+        let date = Local.ymd_opt(year as i32, month as u32, day as u32);
         if date == chrono::offset::LocalResult::None {
             return Err(PESELParsingError::new("invalid birth date"));
         }
+//        if ! PESEL::is_valid_date( year as i32, month as u32, day as u32) {
+//            return Err(PESELParsingError::new("invalid birth date"));
+//        }
         // TODO: add test for it
         if year < 1800  || year > 2299 {
             return Err(PESELParsingError::new("date is out of range!"));
@@ -147,6 +149,14 @@ impl FromStr for PESEL {
         if dob > 31 {
             return Err(PESELParsingError::new("Invalid PESEL! Day exceeds 31"))
         }
+        // TODO: year is not a proper year here. it only contains two last digits
+        let long_year = PESEL::calc_proper_year_from_pesel_encoded_month_and_year(yob, mob);
+        // TODO: month  here is already encoded in pesel format
+        // TODO: probably a pesel_encoded_date_to_date function is needed here
+        // but... what is the point of checking things twice? (when using PESEL::new)?
+        if ! PESEL::is_valid_date( long_year, (mob % 20) as u32, dob as u32) {
+            return Err(PESELParsingError::new("invalid birth date"));
+        }
 
         let (a, b, c, d, e, f, g, h, i, j) = PESEL::extract_pesel_factors(s);
 
@@ -181,6 +191,22 @@ impl std::fmt::Display for PESEL {
 }
 
 impl PESEL {
+    /// Utility function - checks if date is valid
+    fn is_valid_date(year: i32, month: u32, day: u32) -> bool {
+        use chrono::prelude::*;
+        let date = Local.ymd_opt(year, month, day);
+
+        // TODO: add tests for each case here: invalid birth date, date out of range
+//        (date != chrono::offset::LocalResult::None)
+        match date {
+//            chrono::LocalResult::None => false,
+//            chrono::LocalResult::Single(_t) => true,
+            chrono::offset::LocalResult::Single(_t) => true,
+            chrono::offset::LocalResult::None => false,
+            _ => false,
+        }
+    }
+
     /// Utility function - returns triple of random u8s (this is needed to fill some extra space being part of PESEL number
     fn generate_random_values(rng: &mut ThreadRng) -> (u8, u8, u8) {
         let random1 = rng.gen_range(0, 10) as u8;
@@ -200,6 +226,17 @@ impl PESEL {
             _ => 0,
         };
         century
+    }
+
+    fn calc_proper_year_from_pesel_encoded_month_and_year(year: u8, month: u8) -> i32 {
+        year as i32 + match month {
+            1...12 => 1900,
+            20...32 => 2000,
+            40...52 => 2100,
+            60...72 => 2200,
+            80...92 => 1800,
+            _ => 0,
+        }
     }
 
     /// Utility function - returns digit corresponding to biological gender.
@@ -307,6 +344,7 @@ impl PESEL {
         let month = self.mob;
         let day = self.dob;
 
+        // TODO: this probably should be replaced by formatter delivered by chrono
         format!("{}-{:02}-{:02}", year, month, day)
     }
 
