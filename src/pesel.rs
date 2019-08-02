@@ -60,11 +60,12 @@ impl PESEL {
     pub fn new(year: u16, month: u8, day: u8, pesel_gender: PeselGender) -> Result<PESEL, PESELParsingError> {
 
         // check if the date passed is valid date, i.e. not 30th of February etc.
-        // TODO: add tests for each case here: invalid birth date, date out of range
+        // TODO: add tests for each case here:
+        // 1) invalid birth date
+        // 2) date out of range (1800-2299)
         if ! PESEL::is_valid_date( year as i32, month as u32, day as u32) {
             return Err(PESELParsingError::new("invalid birth date"));
         }
-        // TODO: add test for date out of range 1800-2299
         if year < 1800  || year > 2299 {
             return Err(PESELParsingError::new("date is out of range!"));
         }
@@ -136,7 +137,7 @@ impl FromStr for PESEL {
         let mob = s[2..4].parse::<u8>().unwrap();
         // b) month could be: 1-12, 21-32, 41-52, 61-72, 81-92
         if ! ((1..13).contains(&mob) || (21..33).contains(&mob) || (41..53).contains(&mob) || (61..73).contains(&mob) || (81..93).contains(&mob)) {
-            return Err(PESELParsingError::new("Invalid PESEL! Only dates between 1800 and 2299 are suppored!"))
+            return Err(PESELParsingError::new("Invalid PESEL! Only dates between 1800 and 2299 are supported!"))
         }
 
         let dob = s[4..6].parse::<u8>().unwrap();
@@ -564,5 +565,13 @@ mod pesel_validator_tests {
         assert_eq!(PESELParsingError::new("date is out of range!"), pesel.err().unwrap());
     }
 
+    // TODO: fix the code to make it work
+    #[test]
+    fn parsing_pesel_from_date_out_of_range_should_result_in_error() {
+        let pesel = super::PESEL::from_str("99940656478");
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(PESELParsingError::new("Invalid PESEL! Only dates between 1800 and 2299 are supported!"), pesel.err().unwrap());
+    }
 }
 
