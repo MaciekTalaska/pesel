@@ -2,10 +2,10 @@ use std::error::Error;
 
 #[derive(Debug, PartialEq)]
 pub enum PESELErrorKind {
-    InvalidDoB,                     // invalid birth date, for example 30st of February or 31st of June...
-    DoBOutOfRange,                  // date of birth earlier than 1800 or later than 2299
-    SizeError,                      // PESEL has to be 11 characters long
-    BadFormat                       // PESEL string contains digits only
+    InvalidDoB,
+    DoBOutOfRange,
+    SizeError,
+    BadFormat
 }
 
 #[derive(Debug, PartialEq)]
@@ -20,7 +20,7 @@ impl PESELParsingError {
         let msg = match kind {
 
             PESELErrorKind::BadFormat => "PESEL may only contain digits!",
-            PESELErrorKind::DoBOutOfRange => "date is out of range!",                           // ok
+            PESELErrorKind::DoBOutOfRange => "date is out of range!",
             PESELErrorKind::InvalidDoB => "invalid birth date",
             PESELErrorKind::SizeError => "PESEL has to be of 11 chars long",
         };
