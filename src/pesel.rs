@@ -61,13 +61,13 @@ impl PESEL {
 
         // check if the date passed is valid date, i.e. not 30th of February etc.
         // TODO: add tests for each case here:
-        // 1) invalid birth date
-        // 2) date out of range (1800-2299)
-        if ! PESEL::is_valid_date( year as i32, month as u32, day as u32) {
-            return Err(PESELParsingError::new(PESELErrorKind::InvalidDoB));
-        }
+        // 1) date out of range (1800-2299)
+        // 2) invalid birth date
         if year < 1800  || year > 2299 {
             return Err(PESELParsingError::new(PESELErrorKind::DoBOutOfRange));
+        }
+        if ! PESEL::is_valid_date( year as i32, month as u32, day as u32) {
+            return Err(PESELParsingError::new(PESELErrorKind::InvalidDoB));
         }
 
         let pesel_year = year % 100;
@@ -349,7 +349,6 @@ impl PESEL {
 mod pesel_validator_tests {
     use std::str::FromStr;
     use crate::pesel::PeselGender;
-    use std::error::Error;
     use crate::pesel_parsing_error::{PESELParsingError, PESELErrorKind};
 
     #[test]
