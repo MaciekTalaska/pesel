@@ -1,4 +1,4 @@
-use crate::pesel_parsing_error::PESELParsingError;
+use crate::pesel_parsing_error::{PESELParsingError, PESELErrorKind};
 use std::str::FromStr;
 
 use rand::Rng;
@@ -64,10 +64,10 @@ impl PESEL {
         // 1) invalid birth date
         // 2) date out of range (1800-2299)
         if ! PESEL::is_valid_date( year as i32, month as u32, day as u32) {
-            return Err(PESELParsingError::new("invalid birth date"));
+            return Err(PESELParsingError::new(PESELErrorKind::InvalidDoB));
         }
         if year < 1800  || year > 2299 {
-            return Err(PESELParsingError::new("date is out of range!"));
+            return Err(PESELParsingError::new(PESELErrorKind::DoBOutOfRange));
         }
 
         let pesel_year = year % 100;
@@ -121,10 +121,10 @@ impl FromStr for PESEL {
     /// - year of birth is out of range
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.len() != PESEL_LENGTH {
-            return Err(PESELParsingError::new("PESEL has to be of 11 chars long"));
+            return Err(PESELParsingError::new(PESELErrorKind::SizeError));
         }
         if s.chars().any(|f| !f.is_ascii_digit()) {
-            return Err(PESELParsingError::new("PESEL may only contain digits!"));
+            return Err(PESELParsingError::new(PESELErrorKind::BadFormat));
         }
         // Q: should PESEL become automatically invalidated (and thus impossible to create) if algorithm based validation fails?
         // The answer for the above question should be NO. This is due to the fact, that some people have been assigned PESEL numbers that do not go through an algorithmic validation, but from the perspective of the State - are still valid. I believe there is a database with all the exceptions stored, and making it more restrictive than it is in real life does not make any sense.
@@ -137,13 +137,13 @@ impl FromStr for PESEL {
         let mob = s[2..4].parse::<u8>().unwrap();
         // b) month could be: 1-12, 21-32, 41-52, 61-72, 81-92
         if ! ((1..13).contains(&mob) || (21..33).contains(&mob) || (41..53).contains(&mob) || (61..73).contains(&mob) || (81..93).contains(&mob)) {
-            return Err(PESELParsingError::new("Invalid PESEL! Only dates between 1800 and 2299 are supported!"))
+            return Err(PESELParsingError::new(PESELErrorKind::DoBOutOfRange))
         }
 
         let dob = s[4..6].parse::<u8>().unwrap();
         // c) day could be max 31
         if dob > 31 {
-            return Err(PESELParsingError::new("Invalid PESEL! Day exceeds 31"))
+            return Err(PESELParsingError::new(PESELErrorKind::InvalidDoB))
         }
         // TODO: year is not a proper year here. it only contains two last digits
         let real_year = PESEL::calc_proper_year_from_pesel_encoded_month_and_year(yob, mob);
@@ -151,7 +151,7 @@ impl FromStr for PESEL {
         // TODO: probably a pesel_encoded_date_to_date function is needed here
         // but... what is the point of checking things twice? (when using PESEL::new)?
         if ! PESEL::is_valid_date( real_year, (mob % 20) as u32, dob as u32) {
-            return Err(PESELParsingError::new("invalid birth date"));
+            return Err(PESELParsingError::new(PESELErrorKind::InvalidDoB));
         }
 
         let (a, b, c, d, e, f, g, h, i, j) = PESEL::extract_pesel_factors(s);
@@ -349,7 +349,8 @@ impl PESEL {
 mod pesel_validator_tests {
     use std::str::FromStr;
     use crate::pesel::PeselGender;
-    use crate::pesel_parsing_error::PESELParsingError;
+    use std::error::Error;
+    use crate::pesel_parsing_error::{PESELParsingError, PESELErrorKind};
 
     #[test]
     fn building_pesel_from_string() {
@@ -387,6 +388,9 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("");
 
         assert_eq!(true, pesel.is_err());
+//        let error = pesel.err();
+//        assert_eq!("PESEL has to be of 11 chars long", error.unwrap().description());
+        assert_eq!(super::PESELParsingError::new(PESELErrorKind::SizeError), pesel.err().unwrap());
         // TODO: implement std::cmp::PartialEq, for comparing like below
 //        assert_eq!(super::PESELParsingError::new("PESEL has to be of 11 chars long"), pesel);
     }
@@ -508,7 +512,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::new(1993, 02, 29, PeselGender::Female);
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!( PESELParsingError::new("invalid birth date"), pesel.err().unwrap());
+        assert_eq!( PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
     }
 
     #[test]
@@ -517,7 +521,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("83022998790");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!( PESELParsingError::new("invalid birth date"), pesel.err().unwrap());
+        assert_eq!( PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
     }
 
     #[test]
@@ -525,7 +529,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::new(1982, 05, 32, PeselGender::Male);
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new("invalid birth date"), pesel.err().unwrap());
+        assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
     }
 
     // TODO: fix the code to make it work!
@@ -535,7 +539,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("97043289891");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new("Invalid PESEL! Day exceeds 31"), pesel.err().unwrap());
+        assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
     }
 
     // TODO: fix the code to make it work!
@@ -546,7 +550,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("97043189891");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new("invalid birth date"), pesel.err().unwrap());
+        assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
     }
 
     #[test]
@@ -554,7 +558,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("80063144451");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new("invalid birth date"), pesel.err().unwrap());
+        assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
     }
 
     #[test]
@@ -562,7 +566,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::new(1799, 02, 06, PeselGender::Female);
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new("date is out of range!"), pesel.err().unwrap());
+        assert_eq!(PESELParsingError::new(PESELErrorKind::DoBOutOfRange), pesel.err().unwrap());
     }
 
     // TODO: fix the code to make it work
@@ -571,7 +575,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("99940656478");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new("Invalid PESEL! Only dates between 1800 and 2299 are supported!"), pesel.err().unwrap());
+        assert_eq!(PESELParsingError::new(PESELErrorKind::DoBOutOfRange), pesel.err().unwrap());
     }
 }
 
