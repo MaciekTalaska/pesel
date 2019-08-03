@@ -305,7 +305,6 @@ impl PESEL {
         self.gender % 2 == 0
     }
 
-    // TODO: test it!
     /// Returns biological gender as PeselGender enum
     pub fn gender_type(&self) -> PeselGender {
         match self.gender % 2 == 0 {
@@ -329,7 +328,7 @@ impl PESEL {
         let month = self.mob;
         let day = self.dob;
 
-        // TODO: this probably should be replaced by formatter delivered by chrono
+        // TODO: this should be replaced by formatter delivered by chrono
         format!("{}-{:02}-{:02}", year, month, day)
     }
 
@@ -519,19 +518,16 @@ mod pesel_validator_tests {
         assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
     }
 
-    // I am not sure this test should be needed - this situation should be handled when using chrono, and checking for proper date
     #[test]
-    fn parsing_pesel_max_day_is_31() {
+    fn parsing_pesel_day_out_of_range_should_result_in_error() {
         let pesel = super::PESEL::from_str("97043289891");
 
         assert_eq!(true, pesel.is_err());
         assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
     }
 
-    // TODO: rename this test!
-    // this one actually checks for invalid date as such
     #[test]
-    fn parsing_pesel_max_day_is_31_2() {
+    fn parsing_pesel_day_out_of_range_should_result_in_error2() {
         let pesel = super::PESEL::from_str("97043189891");
 
         assert_eq!(true, pesel.is_err());
