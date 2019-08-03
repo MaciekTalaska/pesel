@@ -144,10 +144,8 @@ impl FromStr for PESEL {
         if dob > 31 {
             return Err(PESELParsingError::new(PESELErrorKind::InvalidDoB))
         }
-        // TODO: year is not a proper year here. it only contains two last digits
         let real_year = PESEL::calc_proper_year_from_pesel_encoded_month_and_year(yob, mob);
-        // TODO: month  here is already encoded in pesel format
-        // TODO: probably a pesel_encoded_date_to_date function is needed here
+        // TODO: create a pesel_encoded_date_to_date function
         // but... what is the point of checking things twice? (when using PESEL::new)?
         if ! PESEL::is_valid_date( real_year, (mob % 20) as u32, dob as u32) {
             return Err(PESELParsingError::new(PESELErrorKind::InvalidDoB));
@@ -525,7 +523,6 @@ mod pesel_validator_tests {
         assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
     }
 
-    // TODO: fix the code to make it work!
     // I am not sure this test should be needed - this situation should be handled when using chrono, and checking for proper date
     #[test]
     fn parsing_pesel_max_day_is_31() {
@@ -535,7 +532,6 @@ mod pesel_validator_tests {
         assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
     }
 
-    // TODO: fix the code to make it work!
     // TODO: rename this test!
     // this one actually checks for invalid date as such
     #[test]
@@ -562,7 +558,6 @@ mod pesel_validator_tests {
         assert_eq!(PESELParsingError::new(PESELErrorKind::DoBOutOfRange), pesel.err().unwrap());
     }
 
-    // TODO: fix the code to make it work
     #[test]
     fn parsing_pesel_from_date_out_of_range_should_result_in_error() {
         let pesel = super::PESEL::from_str("99940656478");
