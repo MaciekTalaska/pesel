@@ -4,7 +4,6 @@ use std::str::FromStr;
 use rand::Rng;
 use rand::prelude::ThreadRng;
 
-
 const PESEL_LENGTH: usize = 11;
 
 /// Enum to represent Male/Female
@@ -387,11 +386,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("");
 
         assert_eq!(true, pesel.is_err());
-//        let error = pesel.err();
-//        assert_eq!("PESEL has to be of 11 chars long", error.unwrap().description());
         assert_eq!(super::PESELParsingError::new(PESELErrorKind::SizeError), pesel.err().unwrap());
-        // TODO: implement std::cmp::PartialEq, for comparing like below
-//        assert_eq!(super::PESELParsingError::new("PESEL has to be of 11 chars long"), pesel);
     }
 
     #[test]
@@ -413,8 +408,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("4405140145a");
 
         assert_eq!(true, pesel.is_err());
-        // TODO: check if Error contains expected message
-//        assert_eq!((pesel.expect_err("PESEL may only contain digits!"));
+        assert_eq!(PESELParsingError::new(PESELErrorKind::BadFormat), pesel.unwrap_err() );
     }
 
     #[test]
@@ -422,7 +416,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("44951201458");
 
         assert_eq!(true, pesel.is_err());
-        // TODO: check if Error contains expected message
+        assert_eq!(PESELParsingError::new(PESELErrorKind::DoBOutOfRange), pesel.unwrap_err());
     }
 
     #[test]
@@ -430,7 +424,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("44053201458");
 
         assert_eq!(true, pesel.is_err());
-        // TODO: check if Error contains expected message
+        assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.unwrap_err());
     }
 
     #[test]
