@@ -286,16 +286,12 @@ impl PESEL {
         self.checksum == calculated_checksum
     }
 
-    /// Returns information on biological gender of a person with specified PESEL number assigned.
-    ///
-    /// This function returns true in case PESEL number is assigned to biological female
+    /// Returns true in case PESEL number is assigned to biological female
     pub fn is_male(&self) -> bool {
         self.gender % 2 != 0
     }
 
-    /// Returns information on biological gender of a person with specified PESEL number assigned.
-    ///
-    /// This function returns true in case PESEL number is assigned to biological female
+    /// Returns true in case PESEL number is assigned to biological female
     pub fn is_female(&self) -> bool {
         self.gender % 2 == 0
     }
@@ -308,8 +304,7 @@ impl PESEL {
         }
     }
 
-    /// Returns fully formatted date of birth.
-    /// The date is returned in YYYY-MM-DD format
+    /// Returns date of birth in YYYY-MM-DD format
     pub fn date_of_birth(&self) -> String {
         let century:u16 = match self.mob {
             0...12 => 1900,
@@ -323,7 +318,6 @@ impl PESEL {
         let month = self.mob;
         let day = self.dob;
 
-        // TODO: this should be replaced by formatter delivered by chrono
         format!("{}-{:02}-{:02}", year, month, day)
     }
 
