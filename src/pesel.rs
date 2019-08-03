@@ -445,40 +445,37 @@ mod pesel_validator_tests {
 
     #[test]
     fn generated_pesel_should_be_valid() {
-        let should_be_female = true;
-        // TODO: unwrap -> match Result?
         let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female).unwrap();
 
-        println!("pesel.checksum: {}", pesel.checksum);
         assert_eq!(true, pesel.is_valid());
-        assert_eq!(should_be_female, pesel.is_female());
-//        assert_eq!(false, pesel.is_male());
-//        assert_eq!(true, pesel.is_female());
     }
 
     #[test]
     fn generated_pesel_should_have_proper_gender_set() {
-        let should_be_female = true;
-        // TODO: unwrap -> match Result?
         let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female).unwrap();
 
-        assert_eq!(should_be_female, pesel.is_female());
+        assert_eq!(true, pesel.is_female());
         assert_eq!("female", pesel.gender_name());
+        assert_eq!(PeselGender::Female, pesel.gender_type());
+        assert_ne!(true, pesel.is_male());
+        assert_ne!("male", pesel.gender_name());
+        assert_ne!(PeselGender::Male, pesel.gender_type());
     }
 
     #[test]
     fn generated_pesel_should_have_proper_gender_set2() {
-        let should_be_female = false;
-        // TODO: unwrap -> match Result?
         let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Male).unwrap();
 
-        assert_eq!(should_be_female, pesel.is_female());
+        assert_eq!(true, pesel.is_male());
         assert_eq!("male", pesel.gender_name());
+        assert_eq!(PeselGender::Male, pesel.gender_type());
+        assert_ne!(true, pesel.is_female());
+        assert_ne!("female", pesel.gender_name());
+        assert_ne!(PeselGender::Female, pesel.gender_type());
     }
 
     #[test]
     fn generated_pesel_should_print_proper_birth_date() {
-        // TODO: unwrap -> match Result?
         let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female).unwrap();
 
         assert_eq!("1981-06-27", pesel.date_of_birth());
@@ -491,7 +488,6 @@ mod pesel_validator_tests {
         let month = 12;
         let day = 31;
 
-        // TODO: unwrap -> match Result?
         let pesel = super::PESEL::new(year, month, day, PeselGender::Male).unwrap();
 
         assert_eq!(true, pesel.is_valid());
