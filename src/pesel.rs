@@ -55,13 +55,10 @@ impl PESEL {
     ///     _ => println!("unable to create PESEL for specified date"),
     /// }
     /// ```
-    /// Returned PESEL structure is checked using PESEL valiation algorithm (i.e. typing `new_pesel.is_valid()` should return `true` in all cases
+    /// Returned PESEL structure is valid (i.e. passes validation algorithm check - `new_pesel.is_valid` should always return `true`
     pub fn new(year: u16, month: u8, day: u8, pesel_gender: PeselGender) -> Result<PESEL, PESELParsingError> {
 
         // check if the date passed is valid date, i.e. not 30th of February etc.
-        // TODO: add tests for each case here:
-        // 1) date out of range (1800-2299)
-        // 2) invalid birth date
         if year < 1800  || year > 2299 {
             return Err(PESELParsingError::new(PESELErrorKind::DoBOutOfRange));
         }
@@ -134,19 +131,15 @@ impl FromStr for PESEL {
         // a) year could be: 0-99 - no need to check, as it is not possible to code anything more than 99 on 2 decimal places
         let yob = s[0..2].parse::<u8>().unwrap();
         let mob = s[2..4].parse::<u8>().unwrap();
+        // TODO: pesel-encoded year is converted to year anyway, so let's get rid of this code, and make some sane check instead
         // b) month could be: 1-12, 21-32, 41-52, 61-72, 81-92
         if ! ((1..13).contains(&mob) || (21..33).contains(&mob) || (41..53).contains(&mob) || (61..73).contains(&mob) || (81..93).contains(&mob)) {
             return Err(PESELParsingError::new(PESELErrorKind::DoBOutOfRange))
         }
 
         let dob = s[4..6].parse::<u8>().unwrap();
-        // c) day could be max 31
-        if dob > 31 {
-            return Err(PESELParsingError::new(PESELErrorKind::InvalidDoB))
-        }
-        let real_year = PESEL::calc_proper_year_from_pesel_encoded_month_and_year(yob, mob);
-        // TODO: create a pesel_encoded_date_to_date function
-        // but... what is the point of checking things twice? (when using PESEL::new)?
+
+        let real_year = PESEL::calc_year_from_pesel_encoded_month_and_year(yob, mob);
         if ! PESEL::is_valid_date( real_year, (mob % 20) as u32, dob as u32) {
             return Err(PESELParsingError::new(PESELErrorKind::InvalidDoB));
         }
@@ -213,7 +206,7 @@ impl PESEL {
         century
     }
 
-    fn calc_proper_year_from_pesel_encoded_month_and_year(year: u8, month: u8) -> i32 {
+    fn calc_year_from_pesel_encoded_month_and_year(year: u8, month: u8) -> i32 {
         year as i32 + match month {
             1...12 => 1900,
             20...32 => 2000,
@@ -511,7 +504,7 @@ mod pesel_validator_tests {
     }
 
     #[test]
-    fn crating_pesel_max_day_is_31() {
+    fn crating_pesel_with_32nd_day_of_month_should_result_in_error() {
         let pesel = super::PESEL::new(1982, 05, 32, PeselGender::Male);
 
         assert_eq!(true, pesel.is_err());
@@ -545,6 +538,14 @@ mod pesel_validator_tests {
     #[test]
     fn create_pesel_from_date_out_of_range_should_result_in_error() {
         let pesel = super::PESEL::new(1799, 02, 06, PeselGender::Female);
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(PESELParsingError::new(PESELErrorKind::DoBOutOfRange), pesel.err().unwrap());
+    }
+
+    #[test]
+    fn create_pesel_from_date_out_of_range_should_result_in_error2() {
+        let pesel = super::PESEL::new(2799, 02, 06, PeselGender::Female);
 
         assert_eq!(true, pesel.is_err());
         assert_eq!(PESELParsingError::new(PESELErrorKind::DoBOutOfRange), pesel.err().unwrap());
