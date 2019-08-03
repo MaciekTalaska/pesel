@@ -58,8 +58,7 @@ impl PESEL {
     /// Returned PESEL structure is valid (i.e. passes validation algorithm check - `new_pesel.is_valid` should always return `true`
     pub fn new(year: u16, month: u8, day: u8, pesel_gender: PeselGender) -> Result<PESEL, PESELParsingError> {
 
-        // check if the date passed is valid date, i.e. not 30th of February etc.
-        if year < 1800  || year > 2299 {
+        if ! PESEL::is_date_in_range(year as i32) {
             return Err(PESELParsingError::new(PESELErrorKind::DoBOutOfRange));
         }
         if ! PESEL::is_valid_date( year as i32, month as u32, day as u32) {
@@ -115,6 +114,7 @@ impl FromStr for PESEL {
     /// - string is not of expected length (11 characters)
     /// - not all characters inside string are digits
     /// - year of birth is out of range
+    /// - birth date is incorrect (i.e. 30th of February, 31st of April...
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.len() != PESEL_LENGTH {
             return Err(PESELParsingError::new(PESELErrorKind::SizeError));
@@ -122,24 +122,18 @@ impl FromStr for PESEL {
         if s.chars().any(|f| !f.is_ascii_digit()) {
             return Err(PESELParsingError::new(PESELErrorKind::BadFormat));
         }
-        // Q: should PESEL become automatically invalidated (and thus impossible to create) if algorithm based validation fails?
-        // The answer for the above question should be NO. This is due to the fact, that some people have been assigned PESEL numbers that do not go through an algorithmic validation, but from the perspective of the State - are still valid. I believe there is a database with all the exceptions stored, and making it more restrictive than it is in real life does not make any sense.
+        // do not automatically validate PESEL struct and return Err if it doesn't pass validation check. Some PESEL numbers in Poland (still in use) have been generated incorrectly (probably database with exceptions is used).
         let checksum = s[10..11].parse::<u8>().unwrap();
         let gender  = s[9..10].parse::<u8>().unwrap();
 
-        // Extra validity check in regards to date:
-        // a) year could be: 0-99 - no need to check, as it is not possible to code anything more than 99 on 2 decimal places
         let yob = s[0..2].parse::<u8>().unwrap();
         let mob = s[2..4].parse::<u8>().unwrap();
-        // TODO: pesel-encoded year is converted to year anyway, so let's get rid of this code, and make some sane check instead
-        // b) month could be: 1-12, 21-32, 41-52, 61-72, 81-92
-        if ! ((1..13).contains(&mob) || (21..33).contains(&mob) || (41..53).contains(&mob) || (61..73).contains(&mob) || (81..93).contains(&mob)) {
-            return Err(PESELParsingError::new(PESELErrorKind::DoBOutOfRange))
-        }
-
         let dob = s[4..6].parse::<u8>().unwrap();
 
         let real_year = PESEL::calc_year_from_pesel_encoded_month_and_year(yob, mob);
+        if ! PESEL::is_date_in_range(real_year) {
+            return Err(PESELParsingError::new(PESELErrorKind::DoBOutOfRange));
+        }
         if ! PESEL::is_valid_date( real_year, (mob % 20) as u32, dob as u32) {
             return Err(PESELParsingError::new(PESELErrorKind::InvalidDoB));
         }
@@ -177,6 +171,14 @@ impl std::fmt::Display for PESEL {
 }
 
 impl PESEL {
+    /// Utility function - checks if date is within PESEL system range
+    fn is_date_in_range(year: i32) -> bool {
+        match year < 1800 || year > 2299 {
+            true => false,
+            false => true
+        }
+    }
+
     /// Utility function - checks if date is valid
     fn is_valid_date(year: i32, month: u32, day: u32) -> bool {
         use chrono::prelude::*;
