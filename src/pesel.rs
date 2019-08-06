@@ -1,4 +1,4 @@
-use crate::pesel_parsing_error::{PESELParsingError, PESELErrorKind};
+use crate::pesel_parsing_error::PeselError;
 use std::str::FromStr;
 
 use rand::Rng;
@@ -50,8 +50,8 @@ impl PESEL {
     /// - birth date (could be in the future!)
     /// - biological gender
     ///
-    /// Returns Result<PESEL, PeselParsingError>
-    /// When PeselParsingError is returned it is mainly due to the fact that provided date of birth is invalid: for example 30th of February, 31st of April etc., or date is out range for PESEL (earlier than 1800 or after 2299)
+    /// Returns Result<PESEL, PeselError>
+    /// When PeselError is returned it is mainly due to the fact that provided date of birth is invalid: for example 30th of February, 31st of April etc., or date is out range for PESEL (earlier than 1800 or after 2299)
     ///
     /// Example:
     /// ```rust
@@ -66,13 +66,13 @@ impl PESEL {
     /// }
     /// ```
     /// Returned PESEL structure is valid (i.e. passes validation algorithm check - `new_pesel.is_valid` should always return `true`
-    pub fn new(year: u16, month: u8, day: u8, pesel_gender: PeselGender) -> Result<PESEL, PESELParsingError> {
+    pub fn new(year: u16, month: u8, day: u8, pesel_gender: PeselGender) -> Result<PESEL, PeselError> {
 
         if ! PESEL::is_date_in_range(year as i32) {
-            return Err(PESELParsingError::new(PESELErrorKind::DoBOutOfRange));
+            return Err(PeselError::new(PeselError::DoBOutOfRange));
         }
         if ! PESEL::is_valid_date( year as i32, month as u32, day as u32) {
-            return Err(PESELParsingError::new(PESELErrorKind::InvalidDoB));
+            return Err(PeselError::new(PeselError::InvalidDoB));
         }
 
         let pesel_year = year % 100;
@@ -92,7 +92,7 @@ impl PESEL {
 }
 
 impl FromStr for PESEL {
-    type Err =  PESELParsingError;
+    type Err =  PeselError;
 
     /// This method implements parsing 11 character long string, containing only digits into PESEL number.
     /// There are some checks performed:
@@ -120,17 +120,17 @@ impl FromStr for PESEL {
     /// }
     /// ```
     ///
-    /// In case an error occrus `PESELParsingError` with apropriate message is being returned. This may happen when:
+    /// In case an error occrus `PeselError` with apropriate message is being returned. This may happen when:
     /// - string is not of expected length (11 characters)
     /// - not all characters inside string are digits
     /// - year of birth is out of range
     /// - birth date is incorrect (i.e. 30th of February, 31st of April...
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.len() != PESEL_LENGTH {
-            return Err(PESELParsingError::new(PESELErrorKind::SizeError));
+            return Err(PeselError::new(PeselError::SizeError));
         }
         if s.chars().any(|f| !f.is_ascii_digit()) {
-            return Err(PESELParsingError::new(PESELErrorKind::BadFormat));
+            return Err(PeselError::new(PeselError::BadFormat));
         }
         // do not automatically validate PESEL struct and return Err if it doesn't pass validation check. Some PESEL numbers in Poland (still in use) have been generated incorrectly (probably database with exceptions is used).
         let checksum = s[10..11].parse::<u8>().unwrap();
@@ -142,10 +142,10 @@ impl FromStr for PESEL {
 
         let real_year = PESEL::calc_year_from_pesel_encoded_month_and_year(yob, mob);
         if ! PESEL::is_date_in_range(real_year) {
-            return Err(PESELParsingError::new(PESELErrorKind::DoBOutOfRange));
+            return Err(PeselError::new(PeselError::DoBOutOfRange));
         }
         if ! PESEL::is_valid_date( real_year, (mob % 20) as u32, dob as u32) {
-            return Err(PESELParsingError::new(PESELErrorKind::InvalidDoB));
+            return Err(PeselError::new(PeselError::InvalidDoB));
         }
 
         let (a, b, c, d, e, f, g, h, i, j) = PESEL::extract_pesel_factors(s);
@@ -332,7 +332,7 @@ impl PESEL {
 mod pesel_validator_tests {
     use std::str::FromStr;
     use crate::pesel::PeselGender;
-    use crate::pesel_parsing_error::{PESELParsingError, PESELErrorKind};
+    use crate::pesel_parsing_error::PeselError;
 
     #[test]
     fn building_pesel_from_string() {
@@ -366,7 +366,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(super::PESELParsingError::new(PESELErrorKind::SizeError), pesel.err().unwrap());
+        assert_eq!(super::PeselError::new(PeselError::SizeError), pesel.err().unwrap());
     }
 
     #[test]
@@ -388,7 +388,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("4405140145a");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new(PESELErrorKind::BadFormat), pesel.unwrap_err() );
+        assert_eq!(PeselError::new(PeselError::BadFormat), pesel.unwrap_err() );
     }
 
     #[test]
@@ -396,7 +396,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("44951201458");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new(PESELErrorKind::DoBOutOfRange), pesel.unwrap_err());
+        assert_eq!(PeselError::new(PeselError::DoBOutOfRange), pesel.unwrap_err());
     }
 
     #[test]
@@ -404,7 +404,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("44053201458");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.unwrap_err());
+        assert_eq!(PeselError::new(PeselError::InvalidDoB), pesel.unwrap_err());
     }
 
     #[test]
@@ -477,7 +477,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::new(1993, 02, 29, PeselGender::Female);
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!( PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
+        assert_eq!(PeselError::new(PeselError::InvalidDoB), pesel.err().unwrap());
     }
 
     #[test]
@@ -486,7 +486,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("83022998790");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!( PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
+        assert_eq!(PeselError::new(PeselError::InvalidDoB), pesel.err().unwrap());
     }
 
     #[test]
@@ -494,7 +494,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::new(1982, 05, 32, PeselGender::Male);
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
+        assert_eq!(PeselError::new(PeselError::InvalidDoB), pesel.err().unwrap());
     }
 
     #[test]
@@ -502,7 +502,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("97043289891");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
+        assert_eq!(PeselError::new(PeselError::InvalidDoB), pesel.err().unwrap());
     }
 
     #[test]
@@ -510,7 +510,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("97043189891");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
+        assert_eq!(PeselError::new(PeselError::InvalidDoB), pesel.err().unwrap());
     }
 
     #[test]
@@ -518,7 +518,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("80063144451");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new(PESELErrorKind::InvalidDoB), pesel.err().unwrap());
+        assert_eq!(PeselError::new(PeselError::InvalidDoB), pesel.err().unwrap());
     }
 
     #[test]
@@ -526,7 +526,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::new(1799, 02, 06, PeselGender::Female);
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new(PESELErrorKind::DoBOutOfRange), pesel.err().unwrap());
+        assert_eq!(PeselError::new(PeselError::DoBOutOfRange), pesel.err().unwrap());
     }
 
     #[test]
@@ -534,7 +534,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::new(2799, 02, 06, PeselGender::Female);
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new(PESELErrorKind::DoBOutOfRange), pesel.err().unwrap());
+        assert_eq!(PeselError::new(PeselError::DoBOutOfRange), pesel.err().unwrap());
     }
 
     #[test]
@@ -542,7 +542,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("99940656478");
 
         assert_eq!(true, pesel.is_err());
-        assert_eq!(PESELParsingError::new(PESELErrorKind::DoBOutOfRange), pesel.err().unwrap());
+        assert_eq!(PeselError::new(PeselError::DoBOutOfRange), pesel.err().unwrap());
     }
 }
 

@@ -1,44 +1,37 @@
 use std::error::Error;
 
 #[derive(Debug, PartialEq)]
-pub enum PESELErrorKind {
+pub enum PeselError {
     InvalidDoB,
     DoBOutOfRange,
     SizeError,
-    BadFormat
+    BadFormat,
 }
 
-#[derive(Debug, PartialEq)]
-/// Custom error - used when constructing PESEL from String
-pub struct PESELParsingError {
-    message: String,
-    kind: PESELErrorKind
-}
+impl PeselError {
+    pub fn new (kind: PeselError) -> PeselError {
+        kind
+    }
 
-impl PESELParsingError {
-    pub fn new (kind: PESELErrorKind) -> PESELParsingError {
-        let msg = match kind {
-
-            PESELErrorKind::BadFormat => "PESEL may only contain digits!",
-            PESELErrorKind::DoBOutOfRange => "date is out of range!",
-            PESELErrorKind::InvalidDoB => "invalid birth date",
-            PESELErrorKind::SizeError => "PESEL has to be of 11 chars long",
-        };
-        PESELParsingError {
-            message: msg.to_string(), kind
+    pub fn pesel_error_to_message(&self) -> &str {
+        match *self {
+            PeselError::InvalidDoB => "Invalid birth date!",
+            PeselError::DoBOutOfRange => "Date is out of range!",
+            PeselError::SizeError => "PESEL has to be of 11 chars long!",
+            PeselError::BadFormat => "PESEL may only contain digits!",
         }
     }
 }
 
-impl std::fmt::Display for PESELParsingError {
+impl std::fmt::Display for PeselError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f,"{}",self.message)
+        write!(f, "{}", self.pesel_error_to_message())
     }
 }
 
-impl Error for PESELParsingError {
+impl Error for PeselError {
     fn description(&self) -> &str {
-        &self.message
+        &self.pesel_error_to_message()
     }
 }
 
