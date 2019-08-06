@@ -304,8 +304,8 @@ impl PESEL {
         }
     }
 
-    /// Returns date of birth in YYYY-MM-DD format
-    pub fn date_of_birth(&self) -> String {
+    /// Returns date of birth as chrono::Date
+    pub fn date_of_birth(&self) -> chrono::Date<chrono::Local> {
         let century:u16 = match self.mob {
             0...12 => 1900,
             20...32 => 2000,
@@ -318,9 +318,8 @@ impl PESEL {
         let month = self.mob;
         let day = self.dob;
 
-        format!("{}-{:02}-{:02}", year, month, day)
-//        use chrono::Local;
-//        Local.ymd_opt(year.i32, month.u32, day.u32).unwrap()
+        use chrono::prelude::*;
+        Local.ymd_opt(year as i32, month as u32, day as u32).unwrap()
     }
 
     // Returns description of a biological gender of a person assigned PESEL number
@@ -412,7 +411,7 @@ mod pesel_validator_tests {
     fn birth_date_should_be_returned_as_ddmmyyyy() {
         let pesel = super::PESEL::from_str("44051401458").unwrap();
 
-        assert_eq!("1944-05-14", pesel.date_of_birth());
+        assert_eq!("1944-05-14", pesel.date_of_birth().format("%Y-%m-%d").to_string());
     }
 
     #[test]
@@ -457,7 +456,7 @@ mod pesel_validator_tests {
     fn generated_pesel_should_print_proper_birth_date() {
         let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female).unwrap();
 
-        assert_eq!("1981-06-27", pesel.date_of_birth());
+        assert_eq!("1981-06-27", pesel.date_of_birth().format("%Y-%m-%d").to_string());
     }
 
     #[test]
