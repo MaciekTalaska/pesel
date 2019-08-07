@@ -31,17 +31,7 @@ pub struct PESEL {
     dob:        u8,                 // day of birth
     gender:     PeselGender,        // biological gender
     checksum:   u8,                 // checksum used for validation
-    // all fields below are used for PESEL validation check
-    a:          u8,         // yob (1)
-    b:          u8,         // yob (2)
-    c:          u8,         // mob (1)
-    d:          u8,         // mob (2)
-    e:          u8,         // dob (1)
-    f:          u8,         // dob (2)
-    g:          u8,         // random1
-    h:          u8,         // random2
-    i:          u8,         // random3
-    j:          u8,         // gender
+    is_valid:   bool,               // checksum == algorithmic PESEL validation?
 }
 
 
@@ -164,16 +154,7 @@ impl FromStr for PESEL {
             dob,
             gender: real_gender,
             checksum,
-            a,
-            b,
-            c,
-            d,
-            e,
-            f,
-            g,
-            h,
-            i,
-            j,
+            is_valid: pesel_is_valid,
         })
     }
 }
@@ -297,10 +278,9 @@ impl PESEL {
     /// 4. The sum calculated above modulo 10 should be equal to checksum
     ///
     /// Please note that some PESEL numbers that are in use in Poland are not properly generated, and thus this check may fail for a PESEL number that is officially used.
+    /// Note: this value is precomputed
     pub fn is_valid(&self) -> bool {
-        let calculated_checksum = PESEL::calc_checksum(self.a, self.b, self.c, self.d, self.e, self.f, self.g, self.h, self.i, self.j);
-
-        self.checksum == calculated_checksum
+        self.is_valid
     }
 
     /// Returns biological gender as PeselGender enum
