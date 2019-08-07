@@ -31,7 +31,7 @@ pub struct PESEL {
     dob:        u8,                 // day of birth
     gender:     PeselGender,        // biological gender
     checksum:   u8,                 // checksum used for validation
-    is_valid:   bool,               // checksum == algorithmic PESEL validation?
+    is_valid:   bool,               // true if checksum == algorithmic PESEL validation?
 }
 
 
@@ -310,22 +310,42 @@ impl PESEL {
         self.gender().to_string()
     }
 }
+#[cfg(test)]
+mod pesel_parsing_tests {
+    use std::str::FromStr;
+    use crate::pesel_parsing_error::PeselError;
+    #[test]
+
+    fn zero_length_string_should_fail() {
+        let pesel = super::PESEL::from_str("");
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(super::PeselError::new(PeselError::SizeError), pesel.err().unwrap());
+    }
+
+    #[test]
+    fn pesel_may_only_contain_digits() {
+        let pesel = super::PESEL::from_str("4405140145a");
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(PeselError::new(PeselError::BadFormat), pesel.unwrap_err());
+    }
+}
 
 #[cfg(test)]
-mod pesel_validator_tests {
+mod pesel_base_tests {
     use std::str::FromStr;
     use crate::pesel::PeselGender;
-    use crate::pesel_parsing_error::PeselError;
 
     #[test]
     fn building_pesel_from_string() {
         let pesel_input = "44051401458";
 
         let pesel = super::PESEL::from_str(pesel_input).unwrap();
-        assert_eq!( pesel.raw, pesel_input);
-        assert_eq!( pesel.yob, 44);
-        assert_eq!( pesel.mob, 05);
-        assert_eq!( pesel.dob, 14);
+        assert_eq!(pesel.raw, pesel_input);
+        assert_eq!(pesel.yob, 44);
+        assert_eq!(pesel.mob, 05);
+        assert_eq!(pesel.dob, 14);
     }
 
     #[test]
@@ -345,14 +365,6 @@ mod pesel_validator_tests {
     }
 
     #[test]
-    fn zero_length_string_should_fail() {
-        let pesel = super::PESEL::from_str("");
-
-        assert_eq!(true, pesel.is_err());
-        assert_eq!(super::PeselError::new(PeselError::SizeError), pesel.err().unwrap());
-    }
-
-    #[test]
     fn proper_pesel_should_be_validated() {
         let pesel = super::PESEL::from_str("44051401458").unwrap();
 
@@ -366,36 +378,7 @@ mod pesel_validator_tests {
         assert_eq!(false, pesel.is_valid());
     }
 
-    #[test]
-    fn pesel_may_only_contain_digits() {
-        let pesel = super::PESEL::from_str("4405140145a");
 
-        assert_eq!(true, pesel.is_err());
-        assert_eq!(PeselError::new(PeselError::BadFormat), pesel.unwrap_err() );
-    }
-
-    #[test]
-    fn pesel_should_have_proper_century_coded() {
-        let pesel = super::PESEL::from_str("44951201458");
-
-        assert_eq!(true, pesel.is_err());
-        assert_eq!(PeselError::new(PeselError::DoBOutOfRange), pesel.unwrap_err());
-    }
-
-    #[test]
-    fn birth_day_should_not_exceed_31() {
-        let pesel = super::PESEL::from_str("44053201458");
-
-        assert_eq!(true, pesel.is_err());
-        assert_eq!(PeselError::new(PeselError::InvalidDoB), pesel.unwrap_err());
-    }
-
-    #[test]
-    fn birth_date_should_be_returned_as_ddmmyyyy() {
-        let pesel = super::PESEL::from_str("44051401458").unwrap();
-
-        assert_eq!("1944-05-14", pesel.date_of_birth().format("%Y-%m-%d").to_string());
-    }
 
     #[test]
     fn additional_test() {
@@ -434,7 +417,36 @@ mod pesel_validator_tests {
         assert_ne!("female", pesel.gender_name());
         assert_ne!(PeselGender::Female, pesel.gender());
     }
+}
 
+#[cfg(test)]
+mod pesel_date_tests {
+    use std::str::FromStr;
+    use crate::pesel::PeselGender;
+    use crate::pesel_parsing_error::PeselError;
+
+    #[test]
+    fn pesel_should_have_proper_century_coded() {
+        let pesel = super::PESEL::from_str("44951201458");
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(PeselError::new(PeselError::DoBOutOfRange), pesel.unwrap_err());
+    }
+
+    #[test]
+    fn birth_day_should_not_exceed_31() {
+        let pesel = super::PESEL::from_str("44053201458");
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(PeselError::new(PeselError::InvalidDoB), pesel.unwrap_err());
+    }
+
+    #[test]
+    fn birth_date_should_be_returned_as_ddmmyyyy() {
+        let pesel = super::PESEL::from_str("44051401458").unwrap();
+
+        assert_eq!("1944-05-14", pesel.date_of_birth().format("%Y-%m-%d").to_string());
+    }
     #[test]
     fn generated_pesel_should_print_proper_birth_date() {
         let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female).unwrap();
