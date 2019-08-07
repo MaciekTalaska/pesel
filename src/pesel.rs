@@ -138,8 +138,7 @@ impl FromStr for PESEL {
             return Err(PeselError::new(PeselError::InvalidDoB));
         }
 
-        let (a, b, c, d, e, f, g, h, i, j) = PESEL::extract_pesel_factors(s);
-        let calculated_checksum = PESEL::calc_checksum(a, b, c, d, e, f, g, h, i, j);
+        let calculated_checksum = PESEL::calc_checksum_from_pesel_string(&s);
         let pesel_is_valid = calculated_checksum == checksum;
 
         let real_gender = match gender %2 == 0 {
