@@ -297,7 +297,7 @@ impl PESEL {
     }
 
     /// Returns biological gender as PeselGender enum
-    pub fn gender_type(&self) -> PeselGender {
+    pub fn gender(&self) -> PeselGender {
         match self.gender % 2 == 0 {
             true => PeselGender::Female,
             false => PeselGender::Male
@@ -324,7 +324,7 @@ impl PESEL {
 
     // Returns description of a biological gender of a person assigned PESEL number
     pub fn gender_name(&self) -> String {
-        self.gender_type().to_string()
+        self.gender().to_string()
     }
 }
 
@@ -350,7 +350,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("44051401458").unwrap();
 
         assert_eq!("male", pesel.gender_name());
-        assert_eq!(super::PeselGender::Male, pesel.gender_type());
+        assert_eq!(super::PeselGender::Male, pesel.gender());
     }
 
     #[test]
@@ -358,7 +358,7 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::from_str("44051401468").unwrap();
 
         assert_eq!("female", pesel.gender_name());
-        assert_eq!(super::PeselGender::Female, pesel.gender_type());
+        assert_eq!(super::PeselGender::Female, pesel.gender());
     }
 
     #[test]
@@ -437,9 +437,9 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Female).unwrap();
 
         assert_eq!("female", pesel.gender_name());
-        assert_eq!(PeselGender::Female, pesel.gender_type());
+        assert_eq!(PeselGender::Female, pesel.gender());
         assert_ne!("male", pesel.gender_name());
-        assert_ne!(PeselGender::Male, pesel.gender_type());
+        assert_ne!(PeselGender::Male, pesel.gender());
     }
 
     #[test]
@@ -447,9 +447,9 @@ mod pesel_validator_tests {
         let pesel = super::PESEL::new(1981, 06, 27, PeselGender::Male).unwrap();
 
         assert_eq!("male", pesel.gender_name());
-        assert_eq!(PeselGender::Male, pesel.gender_type());
+        assert_eq!(PeselGender::Male, pesel.gender());
         assert_ne!("female", pesel.gender_name());
-        assert_ne!(PeselGender::Female, pesel.gender_type());
+        assert_ne!(PeselGender::Female, pesel.gender());
     }
 
     #[test]
