@@ -7,7 +7,7 @@ use rand::prelude::ThreadRng;
 const PESEL_LENGTH: usize = 11;
 
 /// Enum to represent Male/Female
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum PeselGender {
     Male,
     Female,
@@ -25,12 +25,12 @@ impl std::fmt::Display for PeselGender {
 
 #[derive(Debug)]
 pub struct PESEL {
-    raw:        String,     // raw PESEL as &str
-    yob:        u8,         // year of birth
-    mob:        u8,         // month of birth, codes century as well (could cover 5 centuries)
-    dob:        u8,         // day of birth
-    gender:     u8,         // biological gender
-    checksum:   u8,         // checksum used for validation
+    raw:        String,             // raw PESEL as &str
+    yob:        u8,                 // year of birth
+    mob:        u8,                 // month of birth, codes century as well (could cover 5 centuries)
+    dob:        u8,                 // day of birth
+    gender:     PeselGender,        // biological gender
+    checksum:   u8,                 // checksum used for validation
     // all fields below are used for PESEL validation check
     a:          u8,         // yob (1)
     b:          u8,         // yob (2)
@@ -149,13 +149,20 @@ impl FromStr for PESEL {
         }
 
         let (a, b, c, d, e, f, g, h, i, j) = PESEL::extract_pesel_factors(s);
+        let calculated_checksum = PESEL::calc_checksum(a, b, c, d, e, f, g, h, i, j);
+        let pesel_is_valid = calculated_checksum == checksum;
+
+        let real_gender = match gender %2 == 0 {
+            true => PeselGender::Female,
+            false => PeselGender::Male,
+        };
 
         Ok(PESEL{
             raw: s.clone().to_string(),
             yob,
             mob,
             dob,
-            gender,
+            gender: real_gender,
             checksum,
             a,
             b,
@@ -298,10 +305,7 @@ impl PESEL {
 
     /// Returns biological gender as PeselGender enum
     pub fn gender(&self) -> PeselGender {
-        match self.gender % 2 == 0 {
-            true => PeselGender::Female,
-            false => PeselGender::Male
-        }
+        self.gender
     }
 
     /// Returns date of birth as chrono::Date
