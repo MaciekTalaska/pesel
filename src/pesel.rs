@@ -181,7 +181,7 @@ impl PESEL {
         use chrono::prelude::*;
         let date = Local.ymd_opt(year, month, day);
 
-        (date != chrono::offset::LocalResult::None)
+        date != chrono::offset::LocalResult::None
     }
 
     /// Utility function - returns triple of random u8s (this is needed to fill some extra space being part of PESEL number
