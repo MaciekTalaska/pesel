@@ -195,11 +195,11 @@ impl PESEL {
     /// Utility function - calculates offset to be added to month to code a century person has been born in
     fn calc_month_century_offset(year: u16) -> u8 {
         let century = match year {
-            1800...1899 => 80,
-            1900...1999 => 0,
-            2000...2099 => 20,
-            2100...2199 => 40,
-            2200...2299 => 60,
+            1800..=1899 => 80,
+            1900..=1999 => 0,
+            2000..=2099 => 20,
+            2100..=2199 => 40,
+            2200..=2299 => 60,
             _ => 0,
         };
         century
@@ -207,11 +207,11 @@ impl PESEL {
 
     fn calc_year_from_pesel_encoded_month_and_year(year: u8, month: u8) -> i32 {
         year as i32 + match month {
-            1...12 => 1900,
-            20...32 => 2000,
-            40...52 => 2100,
-            60...72 => 2200,
-            80...92 => 1800,
+            1..=12 => 1900,
+            20..=32 => 2000,
+            40..=52 => 2100,
+            60..=72 => 2200,
+            80..=92 => 1800,
             _ => 0,
         }
     }
@@ -290,11 +290,11 @@ impl PESEL {
     /// Returns date of birth as chrono::Date
     pub fn date_of_birth(&self) -> chrono::Date<chrono::Local> {
         let century:u16 = match self.mob {
-            0...12 => 1900,
-            20...32 => 2000,
-            40...52 => 2100,
-            60...72 => 2200,
-            80...92 => 1800,
+            0..=12 => 1900,
+            20..=32 => 2000,
+            40..=52 => 2100,
+            60..=72 => 2200,
+            80..=92 => 1800,
             _ => panic!("invalid PESEL")
         };
         let year :u16 = self.yob as u16 + century;
