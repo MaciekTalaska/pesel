@@ -309,6 +309,10 @@ impl PESEL {
     pub fn gender_name(&self) -> String {
         self.gender().to_string()
     }
+
+    pub fn pesel_number(&self) -> String {
+        self.raw.clone()
+    }
 }
 #[cfg(test)]
 mod pesel_parsing_tests {
@@ -378,8 +382,6 @@ mod pesel_base_tests {
         assert_eq!(false, pesel.is_valid());
     }
 
-
-
     #[test]
     fn additional_test() {
         let pesel = super::PESEL::from_str("44051401459");
@@ -416,6 +418,14 @@ mod pesel_base_tests {
         assert_eq!(PeselGender::Male, pesel.gender());
         assert_ne!("female", pesel.gender_name());
         assert_ne!(PeselGender::Female, pesel.gender());
+    }
+
+    #[test]
+    fn pesel_number_stored_should_be_accessible() {
+        let input = "44051401468";
+        let pesel = super::PESEL::from_str(input).unwrap();
+
+        assert_eq!(input.to_string(), pesel.pesel_number());
     }
 }
 
