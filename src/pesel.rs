@@ -495,7 +495,7 @@ mod pesel_date_tests {
     }
 
     #[test]
-    fn crating_pesel_with_32nd_day_of_month_should_result_in_error() {
+    fn creating_pesel_with_32nd_day_of_month_should_result_in_error() {
         let pesel = super::PESEL::new(1982, 05, 32, PeselGender::Male);
 
         assert_eq!(true, pesel.is_err());
@@ -527,7 +527,7 @@ mod pesel_date_tests {
     }
 
     #[test]
-    fn create_pesel_from_date_out_of_range_should_result_in_error() {
+    fn creating_pesel_from_date_earlier_than_1800_should_result_in_error() {
         let pesel = super::PESEL::new(1799, 02, 06, PeselGender::Female);
 
         assert_eq!(true, pesel.is_err());
@@ -535,7 +535,7 @@ mod pesel_date_tests {
     }
 
     #[test]
-    fn create_pesel_from_date_out_of_range_should_result_in_error2() {
+    fn creating_pesel_from_date_out_of_range_should_result_in_error2() {
         let pesel = super::PESEL::new(2799, 02, 06, PeselGender::Female);
 
         assert_eq!(true, pesel.is_err());
