@@ -452,7 +452,7 @@ mod pesel_date_tests {
     }
 
     #[test]
-    fn birth_date_should_be_returned_as_ddmmyyyy() {
+    fn birth_date_should_be_returned_as_yyyy_mm_dd() {
         let pesel = super::PESEL::from_str("44051401458").unwrap();
 
         assert_eq!("1944-05-14", pesel.date_of_birth().format("%Y-%m-%d").to_string());
