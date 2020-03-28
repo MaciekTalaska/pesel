@@ -318,8 +318,8 @@ impl PESEL {
 mod pesel_parsing_tests {
     use std::str::FromStr;
     use crate::pesel_parsing_error::PeselError;
-    #[test]
 
+    #[test]
     fn zero_length_string_should_fail() {
         let pesel = super::PESEL::from_str("");
 
@@ -334,6 +334,15 @@ mod pesel_parsing_tests {
         assert_eq!(true, pesel.is_err());
         assert_eq!(PeselError::new(PeselError::BadFormat), pesel.unwrap_err());
     }
+
+    #[test]
+    fn string_of_numbers_longer_than_11_digits_should_fail() {
+        let pesel = super::PESEL::from_str("800526199869");
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(super::PeselError::new(PeselError::SizeError), pesel.err().unwrap());
+    }
+
 }
 
 #[cfg(test)]
