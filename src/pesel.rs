@@ -336,13 +336,20 @@ mod pesel_parsing_tests {
     }
 
     #[test]
-    fn string_of_numbers_longer_than_11_digits_should_fail() {
+    fn input_longer_than_11_digits_should_fail() {
         let pesel = super::PESEL::from_str("800526199869");
 
         assert_eq!(true, pesel.is_err());
         assert_eq!(super::PeselError::new(PeselError::SizeError), pesel.err().unwrap());
     }
 
+    #[test]
+    fn input_shorter_than_11_digits_should_fail() {
+        let pesel = super::PESEL::from_str("8005261998");
+
+        assert_eq!(true, pesel.is_err());
+        assert_eq!(super::PeselError::new(PeselError::SizeError), pesel.err().unwrap());
+    }
 }
 
 #[cfg(test)]
