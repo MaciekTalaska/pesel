@@ -527,7 +527,7 @@ mod pesel_date_tests {
     }
 
     #[test]
-    fn creating_pesel_from_date_earlier_than_1800_should_result_in_error() {
+    fn creating_pesel_from_date_earlier_than_1800y_should_result_in_error() {
         let pesel = super::PESEL::new(1799, 02, 06, PeselGender::Female);
 
         assert_eq!(true, pesel.is_err());
@@ -535,8 +535,8 @@ mod pesel_date_tests {
     }
 
     #[test]
-    fn creating_pesel_from_date_out_of_range_should_result_in_error2() {
-        let pesel = super::PESEL::new(2799, 02, 06, PeselGender::Female);
+    fn creating_pesel_from_date_after_2299y_should_result_in_error() {
+        let pesel = super::PESEL::new(2300, 01, 01, PeselGender::Female);
 
         assert_eq!(true, pesel.is_err());
         assert_eq!(PeselError::new(PeselError::DoBOutOfRange), pesel.err().unwrap());
