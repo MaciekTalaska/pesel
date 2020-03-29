@@ -399,7 +399,7 @@ mod pesel_base_tests {
     }
 
     #[test]
-    fn additional_test() {
+    fn pesel_from_number_that_fails_on_checksum_should_have_is_valid_set_to_false() {
         let pesel = super::PESEL::from_str("44051401459");
         let result = match pesel {
             Ok(t) => Some(t),
